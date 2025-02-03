@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "postinstall": "npx prisma generate && npx prisma db push --accept-data-loss",
+    "postinstall": "npx prisma generate && npx prisma db push",
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts"
