@@ -23,6 +23,14 @@ app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         console.log(error);
     }
 }));
+app.get("/get-data", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        res.json({ message: "Working fine get data " });
+    }
+    catch (error) {
+        console.log(error);
+    }
+}));
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
