@@ -69,6 +69,9 @@ export const getAllCompany = async (
   try {
     const companies = await prisma.company.findMany();
 
+    const user = res.locals.user;
+    console.log(user); 
+
     res.status(200).json({ message: "Companies Data", companies });
   } catch (error) {
     next(createError(400, "Error getting companies data "));

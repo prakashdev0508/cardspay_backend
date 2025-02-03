@@ -56,6 +56,8 @@ exports.registerCompany = registerCompany;
 const getAllCompany = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const companies = yield prisma.company.findMany();
+        const user = res.locals.user;
+        console.log(user);
         res.status(200).json({ message: "Companies Data", companies });
     }
     catch (error) {

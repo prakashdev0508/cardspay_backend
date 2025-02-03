@@ -12,8 +12,7 @@ export const verifyToken = async (
   next: NextFunction
 ) => {
   try {
-    console.log(req.headers.authorization)
-    const token = req.headers.authorization
+    const token = req.headers.authorization;
 
     if (!token) {
       return next(createError(403, "Please login"));
@@ -27,16 +26,15 @@ export const verifyToken = async (
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: {
-        id: true
-      },
+      select: { id: true },
     });
 
     if (!user) {
       return next(createError(404, "User not found"));
     }
 
-    req.user = user;
+    // Store user data in res.locals
+    res.locals.user = user;
 
     next();
   } catch (error) {

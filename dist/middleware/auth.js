@@ -19,7 +19,6 @@ const db_1 = require("../utils/db");
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(req.headers.authorization);
         const token = req.headers.authorization;
         if (!token) {
             return next((0, resMessage_1.createError)(403, "Please login"));
@@ -30,14 +29,13 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         }
         const user = yield db_1.prisma.user.findUnique({
             where: { id: decoded.userId },
-            select: {
-                id: true
-            },
+            select: { id: true },
         });
         if (!user) {
             return next((0, resMessage_1.createError)(404, "User not found"));
         }
-        req.user = user;
+        // Store user data in res.locals
+        res.locals.user = user;
         next();
     }
     catch (error) {
