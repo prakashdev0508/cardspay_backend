@@ -1,0 +1,21 @@
+# Dependency directories
+node_modules/
+/node_modules
+./node_modules
+
+# Environment variables file
+.env
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+
+# Build files
+/build
+
+# Mac OS system files
+.DS_Store
