@@ -11,6 +11,14 @@ app.get("/", async (req, res) => {
   } 
 });
 
+app.get("/get-data", async (req, res) => {
+  try { 
+    res.json({ message: "Working fine" });
+  } catch (error) {
+    console.log(error);   
+  } 
+});
+
  
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
