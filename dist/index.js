@@ -13,24 +13,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const db_1 = require("./utils/db");
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const index_1 = __importDefault(require("./routes/index"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
+const limiter = (0, express_rate_limit_1.default)({
+    windowMs: 60 * 1000,
+    max: 100,
+    message: { error: "Too many requests, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use(limiter);
 app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json({ message: "Working fine" });
+        res.json({ message: "Working fine sss" });
     }
     catch (error) {
         console.log(error);
     }
 }));
-app.post("/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, email } = req.body;
-    const user = yield db_1.prisma.user.create({
-        data: { name, email },
+app.use("/api/v1", index_1.default);
+app.use((error, req, res, next) => {
+    const errorMessage = error.message || "Something went wrong";
+    const errorStatus = error.status || 500;
+    res.status(errorStatus).json({
+        success: false,
+        status: errorStatus,
+        message: errorMessage,
     });
-    res.json({ message: "User created successfully", user });
-}));
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

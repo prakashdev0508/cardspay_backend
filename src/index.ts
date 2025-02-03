@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
+import routes from "./routes/index";
 
 const app = express();
 app.use(express.json());
@@ -16,11 +17,13 @@ app.use(limiter);
 
 app.get("/", async (req: Request, res: Response) => {
   try {
-    res.json({ message: "Working fine" });
+    res.json({ message: "Working fine sss" });
   } catch (error) {
     console.log(error);
   }
 });
+
+app.use("/api/v1", routes);
 
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   const errorMessage = error.message || "Something went wrong";
