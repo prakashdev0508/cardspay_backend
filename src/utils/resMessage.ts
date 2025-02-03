@@ -1,4 +1,3 @@
-import { Response } from "express";
 
 class CustomError extends Error {
   status: number;
