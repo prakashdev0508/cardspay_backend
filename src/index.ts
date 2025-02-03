@@ -13,7 +13,7 @@ app.get("/", async (req, res) => {
 
 app.get("/get-data", async (req, res) => {
   try { 
-    res.json({ message: "Working fine" });
+    res.json({ message: "Working fine get data " });
   } catch (error) {
     console.log(error);   
   } 
