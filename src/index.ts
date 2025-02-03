@@ -1,10 +1,20 @@
-import express from "express";
-import { prisma } from "./utils/db";
+import express, { Request, Response, NextFunction } from "express";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 app.use(express.json());
 
-app.get("/", async (req, res) => {
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  message: { error: "Too many requests, please try again later." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(limiter);
+
+app.get("/", async (req: Request, res: Response) => {
   try {
     res.json({ message: "Working fine" });
   } catch (error) {
@@ -12,12 +22,15 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.post("/users", async (req, res) => {
-  const { name, email } = req.body;
-  const user = await prisma.user.create({
-    data: { name, email },
+app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+  const errorMessage = error.message || "Something went wrong";
+  const errorStatus = (error as any).status || 500;
+
+  res.status(errorStatus).json({
+    success: false,
+    status: errorStatus,
+    message: errorMessage,
   });
-  res.json({message : "User created successfully" , user});
 });
 
 const PORT = process.env.PORT || 5000;
