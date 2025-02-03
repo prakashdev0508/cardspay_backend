@@ -8,7 +8,7 @@ app.get("/", async (req, res) => {
     res.json({ message: "Working fine" });
   } catch (error) {
     console.log(error);   
-  }
+  } 
 });
 
  
