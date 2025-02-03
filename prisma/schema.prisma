@@ -15,13 +15,59 @@ model Company {
   email               String  @unique
 
   additinal_information Json?
+  user                  User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Departments {
+  id               String  @id @default(cuid())
+  departments_name String
+  is_active        Boolean @default(true)
+  is_deleted       Boolean @default(false)
+
+  user User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Roles {
+  id               String  @id @default(cuid())
+  departments_name String
+  is_active        Boolean @default(true)
+  is_deleted       Boolean @default(false)
+
+  user User[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model User {
-  id    String @id @default(cuid())
-  name  String
-  email String @unique
+  id           String  @id @default(cuid())
+  name         String
+  email        String  @unique
+  password     String
+  phone_number String?
+  company_id   String
+  company      Company @relation(fields: [company_id], references: [id])
+
+  department_id String?
+  department    Departments? @relation(fields: [department_id], references: [id])
+
+  role_id String?
+  role    Roles?  @relation(fields: [role_id], references: [id])
+
+  is_active  Boolean @default(true)
+  is_deleted Boolean @default(false)
+
+  email_verified_at DateTime?
+  is_verified       Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name, email, phone_number])
 }

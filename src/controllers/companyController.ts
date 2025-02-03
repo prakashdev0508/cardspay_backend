@@ -36,14 +36,7 @@ export const registerCompany = async (
         },
       });
 
-      const user = await tx.user.create({
-        data: {
-          email,
-          name: company_name,
-        },
-      });
-
-      return { company, user };
+      return { company };
     });
 
     res.status(201).json({
@@ -65,5 +58,22 @@ export const registerCompany = async (
     if (error) {
       return next(error);
     }
+  }
+};
+
+export const getAllCompany = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const companies = await prisma.company.findMany();
+
+    const user = res.locals.user;
+    console.log(user); 
+
+    res.status(200).json({ message: "Companies Data", companies });
+  } catch (error) {
+    next(createError(400, "Error getting companies data "));
   }
 };

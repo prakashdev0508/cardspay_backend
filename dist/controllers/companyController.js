@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerCompany = void 0;
+exports.getAllCompany = exports.registerCompany = void 0;
 const client_1 = require("@prisma/client");
 const resMessage_1 = require("../utils/resMessage");
 const prisma = new client_1.PrismaClient();
@@ -31,13 +31,7 @@ const registerCompany = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                     email,
                 },
             });
-            const user = yield tx.user.create({
-                data: {
-                    email,
-                    name: company_name,
-                },
-            });
-            return { company, user };
+            return { company };
         }));
         res.status(201).json({
             success: true,
@@ -59,3 +53,15 @@ const registerCompany = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.registerCompany = registerCompany;
+const getAllCompany = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const companies = yield prisma.company.findMany();
+        const user = res.locals.user;
+        console.log(user);
+        res.status(200).json({ message: "Companies Data", companies });
+    }
+    catch (error) {
+        next((0, resMessage_1.createError)(400, "Error getting companies data "));
+    }
+});
+exports.getAllCompany = getAllCompany;
