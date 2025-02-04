@@ -15,4 +15,7 @@ router.route("/all-companies").get(auth_1.verifyToken, companyController_1.getAl
 router.route("/user/create").post(authController_1.userRegister);
 router.route("/user/send-password").post(authController_1.sendUserDetails);
 router.route("/user/login").post(authController_1.userLogin);
+router.route("/user/send-password-link").post(authController_1.resendUpdatePasswordLink);
+router.route("/user/update-password").post(authController_1.updatePasswordfromLink);
+router.route("/user/manual-update-password").post(auth_1.verifyToken, authController_1.updatePassword);
 exports.default = router;

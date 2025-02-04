@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userLogin = exports.sendUserDetails = exports.userRegister = exports.generatePassword = void 0;
+exports.updatePasswordfromLink = exports.resendUpdatePasswordLink = exports.updatePassword = exports.userLogin = exports.sendUserDetails = exports.userRegister = exports.generatePassword = void 0;
 const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const emails_1 = require("../utils/emails");
@@ -47,7 +47,7 @@ const userRegister = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     }
     catch (error) {
         console.error("Error registering user:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "Error registering user ", error });
     }
 });
 exports.userRegister = userRegister;
@@ -74,7 +74,7 @@ const sendUserDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     }
     catch (error) {
         console.error("Error sending email:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "Error updating password", error });
     }
 });
 exports.sendUserDetails = sendUserDetails;
@@ -103,8 +103,72 @@ const userLogin = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         });
     }
     catch (error) {
-        console.error("Error logging in user:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "Error while login", error });
     }
 });
 exports.userLogin = userLogin;
+const updatePassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email, newPassword } = req.body;
+        if (!email || !newPassword) {
+            return next((0, resMessage_1.createError)(400, "Please provide all details"));
+        }
+        const user = yield prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            return next((0, resMessage_1.createError)(404, "User not found"));
+        }
+        const hashedNewPassword = yield bcryptjs_1.default.hash(String(newPassword), 10);
+        yield prisma.user.update({
+            where: { email },
+            data: { password: hashedNewPassword },
+        });
+        res.status(200).json({ message: "Password updated successfully" });
+    }
+    catch (error) {
+        console.error("Error updating password:", error);
+        res.status(500).json({ message: "Error updating password ", error });
+    }
+});
+exports.updatePassword = updatePassword;
+const resendUpdatePasswordLink = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email } = req.body;
+        const user = yield prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            return next((0, resMessage_1.createError)(404, "User not found"));
+        }
+        const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, {
+            expiresIn: "1h",
+        });
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+        const emailContent = `Click the link below to reset your password:
+
+${resetLink}
+
+This link will expire in 1 hour.`;
+        yield (0, emails_1.sendEmail)(email, "Reset Your Password", emailContent);
+        res.status(200).json({ message: "Password reset link sent successfully" });
+    }
+    catch (error) {
+        console.error("Error sending password reset link:", error);
+        res.status(500).json({ message: "Error sending password link ", error });
+    }
+});
+exports.resendUpdatePasswordLink = resendUpdatePasswordLink;
+const updatePasswordfromLink = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { token, newPassword } = req.body;
+        const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
+        if (!decoded.userId) {
+            return next((0, resMessage_1.createError)(401, "Invalid token"));
+        }
+        const hashedNewPassword = yield bcryptjs_1.default.hash(newPassword, 10);
+        yield prisma.user.update({
+            where: { id: decoded.userId },
+            data: { password: hashedNewPassword },
+        });
+        res.status(200).json({ message: "Password updated successfully" });
+    }
+    catch (error) { }
+});
+exports.updatePasswordfromLink = updatePasswordfromLink;

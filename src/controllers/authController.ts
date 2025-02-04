@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { sendEmail } from "../utils/emails";
 import { createError } from "../utils/resMessage";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
@@ -52,7 +52,7 @@ export const userRegister = async (
     res.status(201).json({ message: "User registered successfully", user });
   } catch (error) {
     console.error("Error registering user:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Error registering user ", error });
   }
 };
 
@@ -89,7 +89,7 @@ export const sendUserDetails = async (
     res.status(200).json({ message: "New password sent successfully" });
   } catch (error) {
     console.error("Error sending email:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Error updating password", error });
   }
 };
 
@@ -127,7 +127,95 @@ export const userLogin = async (
       token,
     });
   } catch (error) {
-    console.error("Error logging in user:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Error while login", error });
   }
+};
+
+export const updatePassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return next(createError(400, "Please provide all details"));
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      return next(createError(404, "User not found"));
+    }
+
+    const hashedNewPassword = await bcrypt.hash(String(newPassword), 10);
+    await prisma.user.update({
+      where: { email },
+      data: { password: hashedNewPassword },
+    });
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).json({ message: "Error updating password ", error });
+  }
+};
+
+export const resendUpdatePasswordLink = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { email } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return next(createError(404, "User not found"));
+    }
+
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+    const emailContent = `Click the link below to reset your password:
+
+${resetLink}
+
+This link will expire in 1 hour.`;
+
+    await sendEmail(email, "Reset Your Password", emailContent);
+
+    res.status(200).json({ message: "Password reset link sent successfully" });
+  } catch (error) {
+    console.error("Error sending password reset link:", error);
+    res.status(500).json({ message: "Error sending password link ", error });
+  }
+};
+
+export const updatePasswordfromLink = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { token, newPassword } = req.body;
+
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+
+    if (!decoded.userId) {
+      return next(createError(401, "Invalid token"));
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: decoded.userId },
+      data: { password: hashedNewPassword },
+    });
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {}
 };
