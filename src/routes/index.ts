@@ -7,6 +7,9 @@ import {
   sendUserDetails,
   userRegister,
   userLogin,
+  resendUpdatePasswordLink,
+  updatePasswordfromLink,
+  updatePassword,
 } from "../controllers/authController";
 import { verifyToken } from "../middleware/auth";
 
@@ -20,5 +23,8 @@ router.route("/all-companies").get(verifyToken, getAllCompany);
 router.route("/user/create").post(userRegister);
 router.route("/user/send-password").post(sendUserDetails);
 router.route("/user/login").post(userLogin);
+router.route("/user/send-password-link").post(resendUpdatePasswordLink);
+router.route("/user/update-password").post(updatePasswordfromLink);
+router.route("/user/manual-update-password").post( verifyToken ,updatePassword);
 
 export default router;
