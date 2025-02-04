@@ -11,14 +11,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyRoles = void 0;
 const resMessage_1 = require("../utils/resMessage");
-const verifyRoles = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        console.log("rolaa", res.locals.roles);
-        next();
-    }
-    catch (error) {
-        console.error("JWT Verification Error:", error);
-        return next((0, resMessage_1.createError)(401, "Invalid or expired token"));
-    }
-});
+const verifyRoles = (accessRole) => {
+    return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const userRoles = res.locals.roles;
+            console.log("rolaa ", userRoles);
+            if (!userRoles || userRoles.length === 0) {
+                return next((0, resMessage_1.createError)(403, "No roles found for user"));
+            }
+            const hasAccess = userRoles.some((role) => accessRole.includes(role));
+            if (!hasAccess) {
+                return next((0, resMessage_1.createError)(403, "Unauthorized : Access forbidden "));
+            }
+            next();
+        }
+        catch (error) {
+            console.error("Role verification error:", error);
+            return next((0, resMessage_1.createError)(500, "Role verification error"));
+        }
+    });
+};
 exports.verifyRoles = verifyRoles;
