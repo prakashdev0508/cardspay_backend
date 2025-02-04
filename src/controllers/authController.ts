@@ -107,6 +107,10 @@ export const userLogin = async (
 
     const user = await prisma.user.findUnique({
       where: { email },
+      select : {
+        id : true,
+        password : true
+      }
     });
 
     if (!user) {

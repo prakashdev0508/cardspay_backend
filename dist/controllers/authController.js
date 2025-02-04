@@ -86,6 +86,10 @@ const userLogin = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         }
         const user = yield prisma.user.findUnique({
             where: { email },
+            select: {
+                id: true,
+                password: true
+            }
         });
         if (!user) {
             return next((0, resMessage_1.createError)(404, "User not found"));

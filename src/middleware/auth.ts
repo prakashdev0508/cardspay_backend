@@ -3,7 +3,6 @@ import { createError } from "../utils/resMessage";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { prisma } from "../utils/db";
 
-
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 
 export const verifyToken = async (
@@ -26,15 +25,25 @@ export const verifyToken = async (
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true },
+      select: {
+        id: true,
+        userRoles: {
+          include: {
+            role: {
+              select: { role_slug: true },
+            },
+          },
+        },
+      },
     });
 
     if (!user) {
       return next(createError(404, "User not found"));
     }
 
-    // Store user data in res.locals
-    res.locals.user = user;
+    const roleSlugs = user.userRoles.map((userRole) => userRole.role.role_slug);
+    res.locals.userId = user.id;
+    res.locals.roles = roleSlugs;
 
     next();
   } catch (error) {

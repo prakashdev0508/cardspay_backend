@@ -34,12 +34,13 @@ model Departments {
 }
 
 model Roles {
-  id               String  @id @default(cuid())
-  departments_name String
-  is_active        Boolean @default(true)
-  is_deleted       Boolean @default(false)
+  id         String  @id @default(cuid())
+  role_name  String
+  role_slug  String? @unique
+  is_active  Boolean @default(true)
+  is_deleted Boolean @default(false)
 
-  user User[]
+  users UserRoles[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -57,11 +58,15 @@ model User {
   department_id String?
   department    Departments? @relation(fields: [department_id], references: [id])
 
-  role_id String?
-  role    Roles?  @relation(fields: [role_id], references: [id])
+  userRoles UserRoles[]
 
   is_active  Boolean @default(true)
   is_deleted Boolean @default(false)
+
+  leadInfo    LeadInfo[]
+  services    Services[]
+  cardDetails CardsDetails[]
+  charges     Charges[]
 
   email_verified_at DateTime?
   is_verified       Boolean   @default(false)
@@ -70,4 +75,88 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@index([name, email, phone_number])
+}
+
+model UserRoles {
+  userId String
+  roleId String
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Roles @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model Services {
+  id   String @id @default(cuid())
+  name String
+
+  lead_info LeadInfo[]
+
+  created_by String
+  createdBy  User   @relation(fields: [created_by], references: [id])
+
+  charge Charges?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CardsDetails {
+  id   String @id @default(cuid())
+  name String
+
+  created_by String
+  createdBy  User   @relation(fields: [created_by], references: [id])
+
+  charge Charges?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Charges {
+  id                String @id @default(cuid())
+  user_charge       Int?
+  company_charge    Int?
+  platform_charge   Int?
+  additional_charge Int?
+
+  cardId String?       @unique
+  card   CardsDetails? @relation(fields: [cardId], references: [id])
+
+  serviceId String?   @unique
+  service   Services? @relation(fields: [serviceId], references: [id])
+
+  created_by String
+  createdBy  User   @relation(fields: [created_by], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model LeadInfo {
+  id              String    @id @default(cuid())
+  name            String
+  mobile_number   String?
+  city_name       String?
+  area            String?
+  expected_amount BigInt?
+  serviceId       String?
+  service         Services? @relation(fields: [serviceId], references: [id])
+
+  created_by String
+  createdBy  User   @relation(fields: [created_by], references: [id])
+
+  priority Priority @default(MEDIUM)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

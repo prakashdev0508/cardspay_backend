@@ -1,3 +1,5 @@
+import { Response } from "express";
+
 class CustomError extends Error {
   status: number;
   error: any;
@@ -12,4 +14,15 @@ class CustomError extends Error {
 
 export const createError = (status: number, message: string, error?: any) => {
   return new CustomError(status, message, error);
+};
+
+export const createSuccess = (
+  res: Response,
+  message: string,
+  data?: any,
+  status?: number
+) => {
+  return res
+    .status(status ? status : 200)
+    .json({ success: true, message: message, data });
 };
