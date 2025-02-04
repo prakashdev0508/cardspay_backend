@@ -7,7 +7,7 @@ import {
   sendUserDetails,
   userRegister,
   userLogin,
-} from "../controllers/userController";
+} from "../controllers/authController";
 import { verifyToken } from "../middleware/auth";
 
 const router = express.Router();
