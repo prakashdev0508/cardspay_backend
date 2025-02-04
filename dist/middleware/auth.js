@@ -29,13 +29,23 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         }
         const user = yield db_1.prisma.user.findUnique({
             where: { id: decoded.userId },
-            select: { id: true },
+            select: {
+                id: true,
+                userRoles: {
+                    include: {
+                        role: {
+                            select: { role_slug: true },
+                        },
+                    },
+                },
+            },
         });
         if (!user) {
             return next((0, resMessage_1.createError)(404, "User not found"));
         }
-        // Store user data in res.locals
-        res.locals.user = user;
+        const roleSlugs = user.userRoles.map((userRole) => userRole.role.role_slug);
+        res.locals.userId = user.id;
+        res.locals.roles = roleSlugs;
         next();
     }
     catch (error) {
