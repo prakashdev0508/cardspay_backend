@@ -12,6 +12,7 @@ const roles_2 = require("../controllers/roles");
 const service_1 = require("../controllers/service");
 const cardController_1 = require("../controllers/cardController");
 const charges_1 = require("../controllers/charges");
+const leadcontroller_1 = require("../controllers/leadcontroller");
 const router = express_1.default.Router();
 //Company routes
 router.route("/company/create").post(companyController_1.registerCompany);
@@ -37,6 +38,12 @@ router
 router
     .route("/cards/create")
     .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), cardController_1.createNewCard);
+router
+    .route("/cards/all")
+    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), cardController_1.getCardDetails);
+router
+    .route("/cards/update")
+    .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), cardController_1.updateCardDetails);
 //Charges
 router
     .route("/charges/create")
@@ -47,4 +54,15 @@ router
 router
     .route("/charges/update/:id")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), charges_1.updateCharges);
+router
+    .route("/charges/delete/:id")
+    .delete(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), charges_1.deleteCharge);
+//Lead
+router
+    .route("/lead/create")
+    .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), leadcontroller_1.newLead);
+//Transaction
+router
+    .route("/transaction/all")
+    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), leadcontroller_1.getAllTransaction);
 exports.default = router;
