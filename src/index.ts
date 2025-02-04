@@ -8,7 +8,10 @@ app.use(express.json());
 const limiter = rateLimit({
   windowMs: 60 * 1000,
   max: 100,
-  message: { error: "Too many requests, please try again later." },
+  message: {
+    success: false,
+    message: "Too many requests, please try again later.",
+  },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -35,8 +38,6 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     message: errorMessage,
   });
 });
-
-
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

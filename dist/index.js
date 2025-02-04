@@ -20,7 +20,10 @@ app.use(express_1.default.json());
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 60 * 1000,
     max: 100,
-    message: { error: "Too many requests, please try again later." },
+    message: {
+        success: false,
+        message: "Too many requests, please try again later.",
+    },
     standardHeaders: true,
     legacyHeaders: false,
 });

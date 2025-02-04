@@ -12,7 +12,7 @@ const roles_2 = require("../controllers/roles");
 const router = express_1.default.Router();
 //Company routes
 router.route("/company/create").post(companyController_1.registerCompany);
-router.route("/all-companies").get(auth_1.verifyToken, roles_1.verifyRoles, companyController_1.getAllCompany);
+router.route("/all-companies").get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admi", "admi"]), companyController_1.getAllCompany);
 //User routes
 router.route("/user/create").post(authController_1.userRegister);
 router.route("/user/send-password").post(authController_1.sendUserDetails);
