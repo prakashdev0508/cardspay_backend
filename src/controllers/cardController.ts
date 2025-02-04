@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { prisma } from "../utils/db";
 import { createError, createSuccess } from "../utils/resMessage";
 
-export const createNewCard= async (
+export const createNewCard = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -26,5 +26,99 @@ export const createNewCard= async (
     createSuccess(res, "card created successfully ", { id: service.id });
   } catch (error) {
     next(createError(500, "Error creating service"));
+  }
+};
+
+export const getCardDetails = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = res.locals.userId;
+
+    if (!userId) {
+      return next(createError(403, "No user found "));
+    }
+
+    const cardDetails = await prisma.cardsDetails.findMany({
+      where: {
+        created_by: userId,
+      },
+    });
+
+    createSuccess(res, "card details fetched successfully ", cardDetails);
+  } catch (error) {
+    next(createError(500, "Error fetching card details"));
+  }
+};
+
+export const updateCardDetails = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id, name } = req.body;
+
+    const userId = res.locals.userId;
+
+    if (!userId) {
+      return next(createError(403, "No user found "));
+    }
+
+    const cardDetails = await prisma.cardsDetails.update({
+      where: {
+        id: id,
+      },
+      data: {
+        name: name,
+      },
+    });
+
+    createSuccess(res, "card details updated successfully ", cardDetails);
+  } catch (error) {
+    next(createError(500, "Error updating card details"));
+  }
+};
+
+export const deleteCardDetails = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.body;
+
+    const userId = res.locals.userId;
+
+    if (!userId) {
+      return next(createError(403, "No user found "));
+    }
+
+    const cardDetails = await prisma.cardsDetails.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    createSuccess(res, "card details deleted successfully ", cardDetails);
+  } catch (error) {
+    next(createError(500, "Error deleting card details"));
+  }
+};
+
+export const getAllCardList = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    
+    const cardDetails = await prisma.cardsDetails.findMany();
+
+    createSuccess(res, "card details fetched successfully ", cardDetails);
+  } catch (error) {
+    next(createError(500, "Error fetching card details"));
   }
 };

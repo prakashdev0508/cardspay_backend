@@ -63,10 +63,11 @@ model User {
   is_active  Boolean @default(true)
   is_deleted Boolean @default(false)
 
-  leadInfo    LeadInfo[]
+  customerInfo    CustomerData[]
   services    Services[]
   cardDetails CardsDetails[]
   charges     Charges[]
+  transaction Transaction[]
 
   email_verified_at DateTime?
   is_verified       Boolean   @default(false)
@@ -91,12 +92,13 @@ model Services {
   id   String @id @default(cuid())
   name String
 
-  lead_info LeadInfo[]
+  customer_info CustomerData[]
 
   created_by String
   createdBy  User   @relation(fields: [created_by], references: [id])
 
   charge Charges?
+  transaction Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -110,6 +112,7 @@ model CardsDetails {
   createdBy  User   @relation(fields: [created_by], references: [id])
 
   charge Charges?
+  amount Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -142,21 +145,61 @@ enum Priority {
   CRITICAL
 }
 
-model LeadInfo {
+model CustomerData {
   id              String    @id @default(cuid())
   name            String
   mobile_number   String?
   city_name       String?
   area            String?
-  expected_amount BigInt?
+  expected_amount Int?
   serviceId       String?
   service         Services? @relation(fields: [serviceId], references: [id])
 
   created_by String
   createdBy  User   @relation(fields: [created_by], references: [id])
+  amount Transaction[]
 
   priority Priority @default(MEDIUM)
+  
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ONHOLD
+  CANCELLED
+}
+
+model Transaction {
+  id String @id @default(cuid())
+  bill_amount Int
+  due_date DateTime
+
+  cardId String?      
+  cardType   CardsDetails? @relation(fields: [cardId], references: [id])
+
+  status Status @default(PENDING)
+  follow_up_date DateTime?
+  user_charge Int?
+  company_charge Int? 
+  platform_charge Int?
+  additional_charge Int?
+
+  serviceId String?
+  service   Services? @relation(fields: [serviceId], references: [id])
+
+
+  leadId String?
+  lead   CustomerData? @relation(fields: [leadId], references: [id])
+
+  createdBy String
+  createdByUser User @relation(fields: [createdBy], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
 }

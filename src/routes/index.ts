@@ -15,12 +15,19 @@ import { verifyToken } from "../middleware/auth";
 import { verifyRoles } from "../middleware/roles";
 import { allRoles, createRoles, assignRolesToUser } from "../controllers/roles";
 import { createNewService } from "../controllers/service";
-import { createNewCard } from "../controllers/cardController";
+import {
+  createNewCard,
+  getCardDetails,
+  updateCardDetails,
+  deleteCardDetails,
+} from "../controllers/cardController";
 import {
   createNewCharges,
+  deleteCharge,
   getAllChargeList,
   updateCharges,
 } from "../controllers/charges";
+import { getAllTransaction, newLead } from "../controllers/leadcontroller";
 
 const router = express.Router();
 
@@ -61,6 +68,22 @@ router
     createNewCard
   );
 
+router
+  .route("/cards/all")
+  .get(
+    verifyToken,
+    verifyRoles(["super_admin", "finance_manager", "admin"]),
+    getCardDetails
+  );
+
+router
+  .route("/cards/update")
+  .put(
+    verifyToken,
+    verifyRoles(["super_admin", "finance_manager", "admin"]),
+    updateCardDetails
+  );
+
 //Charges
 router
   .route("/charges/create")
@@ -84,4 +107,29 @@ router
     updateCharges
   );
 
+router
+  .route("/charges/delete/:id")
+  .delete(
+    verifyToken,
+    verifyRoles(["super_admin", "finance_manager", "admin"]),
+    deleteCharge
+  );
+
+//Lead
+router
+  .route("/lead/create")
+  .post(
+    verifyToken,
+    verifyRoles(["super_admin", "finance_manager", "admin", "sales"]),
+    newLead
+  );
+
+//Transaction
+router
+  .route("/transaction/all")
+  .get(
+    verifyToken,
+    verifyRoles(["super_admin", "finance_manager", "admin", "sales"]),
+    getAllTransaction
+  );
 export default router;
