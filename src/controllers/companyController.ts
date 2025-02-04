@@ -70,7 +70,6 @@ export const getAllCompany = async (
     const companies = await prisma.company.findMany();
 
     const user = res.locals.userId;
-    console.log(user);
 
     res.status(200).json({ message: "Companies Data", companies });
   } catch (error) {
