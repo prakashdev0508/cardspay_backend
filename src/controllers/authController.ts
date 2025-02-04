@@ -101,8 +101,8 @@ export const userLogin = async (
   try {
     const { email, password } = req.body;
 
-    if(!email || !password){
-        return next(createError(404 , "Fill all details"))
+    if (!email || !password) {
+      return next(createError(404, "Fill all details"));
     }
 
     const user = await prisma.user.findUnique({
