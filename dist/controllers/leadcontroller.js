@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllTransaction = exports.newLead = void 0;
+exports.newLead = void 0;
 const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -68,51 +68,3 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.newLead = newLead;
-const getAllTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const userId = res.locals.userId;
-        console.log("userId", userId);
-        if (!userId) {
-            return next((0, resMessage_1.createError)(403, "No user found"));
-        }
-        const transactions = yield db_1.prisma.transaction.findMany({
-            where: {
-                createdBy: userId,
-            },
-            select: {
-                id: true,
-                bill_amount: true,
-                due_date: true,
-                follow_up_date: true,
-                user_charge: true,
-                company_charge: true,
-                platform_charge: true,
-                additional_charge: true,
-                lead: {
-                    select: {
-                        name: true,
-                        mobile_number: true,
-                        city_name: true,
-                        area: true,
-                    },
-                },
-                cardType: {
-                    select: {
-                        name: true,
-                    },
-                },
-                service: {
-                    select: {
-                        name: true,
-                    },
-                },
-            },
-        });
-        (0, resMessage_1.createSuccess)(res, "Data fetched", transactions, 200);
-    }
-    catch (error) {
-        console.log("err", error);
-        next((0, resMessage_1.createError)(500, "Error fetching transactions", error));
-    }
-});
-exports.getAllTransaction = getAllTransaction;
