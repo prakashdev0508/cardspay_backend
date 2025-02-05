@@ -13,6 +13,7 @@ const service_1 = require("../controllers/service");
 const cardController_1 = require("../controllers/cardController");
 const charges_1 = require("../controllers/charges");
 const leadcontroller_1 = require("../controllers/leadcontroller");
+const transection_1 = require("../controllers/transection");
 const router = express_1.default.Router();
 //Company routes
 router.route("/company/create").post(companyController_1.registerCompany);
@@ -64,5 +65,8 @@ router
 //Transaction
 router
     .route("/transaction/all")
-    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), leadcontroller_1.getAllTransaction);
+    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), transection_1.getAllTransaction);
+router
+    .route("/transaction/update/:transactionId")
+    .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), transection_1.updateTransaction);
 exports.default = router;

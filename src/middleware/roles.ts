@@ -6,8 +6,6 @@ export const verifyRoles = (accessRole: string[]) => {
     try {
       const userRoles = res.locals.roles;
 
-      console.log("rolaa ", userRoles);
-
       if (!userRoles || userRoles.length === 0) {
         return next(createError(403, "No roles found for user"));
       }

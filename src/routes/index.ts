@@ -27,7 +27,11 @@ import {
   getAllChargeList,
   updateCharges,
 } from "../controllers/charges";
-import { getAllTransaction, newLead } from "../controllers/leadcontroller";
+import { newLead } from "../controllers/leadcontroller";
+import {
+  getAllTransaction,
+  updateTransaction,
+} from "../controllers/transection";
 
 const router = express.Router();
 
@@ -131,5 +135,13 @@ router
     verifyToken,
     verifyRoles(["super_admin", "finance_manager", "admin", "sales"]),
     getAllTransaction
+  );
+
+router
+  .route("/transaction/update/:transactionId")
+  .put(
+    verifyToken,
+    verifyRoles(["super_admin", "finance_manager", "admin", "sales"]),
+    updateTransaction
   );
 export default router;

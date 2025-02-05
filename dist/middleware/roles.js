@@ -15,7 +15,6 @@ const verifyRoles = (accessRole) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const userRoles = res.locals.roles;
-            console.log("rolaa ", userRoles);
             if (!userRoles || userRoles.length === 0) {
                 return next((0, resMessage_1.createError)(403, "No roles found for user"));
             }
