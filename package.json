@@ -5,6 +5,7 @@
   "scripts": {
     "postinstall": "npx prisma generate && npx prisma db push",
     "build": "tsc",
+    "test": "jest",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts"
   },
@@ -23,12 +24,18 @@
     "prisma": "^6.3.0"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.13.0",
     "@types/nodemailer": "^6.4.17",
+    "@types/supertest": "^6.0.2",
+    "jest": "^29.7.0",
     "nodemon": "^3.1.9",
     "prisma": "^6.3.0",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   }

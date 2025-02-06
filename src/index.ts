@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
 import routes from "./routes/index";
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
 const limiter = rateLimit({
