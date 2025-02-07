@@ -32,6 +32,7 @@ import {
   getAllTransaction,
   updateTransaction,
 } from "../controllers/transection";
+import { userDetails } from "../controllers/userController";
 
 const router = express.Router();
 
@@ -48,6 +49,7 @@ router.route("/user/login").post(userLogin);
 router.route("/user/send-password-link").post(resendUpdatePasswordLink);
 router.route("/user/update-password").post(updatePasswordfromLink);
 router.route("/user/manual-update-password").post(verifyToken, updatePassword);
+router.route("/user-details").get(verifyToken, userDetails);
 
 //Roles
 router.route("/role/create").post(verifyToken, createRoles);
