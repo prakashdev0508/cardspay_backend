@@ -37,13 +37,14 @@ router.route("/role/assign").post(auth_1.verifyToken, roles_2.assignRolesToUser)
 router
     .route("/services/create")
     .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), service_1.createNewService);
+router.route("/services/all").get(auth_1.verifyToken, service_1.getServices);
 //cards
 router
     .route("/cards/create")
     .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), cardController_1.createNewCard);
 router
     .route("/cards/all")
-    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), cardController_1.getCardDetails);
+    .get(auth_1.verifyToken, cardController_1.getCardDetails);
 router
     .route("/cards/update")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), cardController_1.updateCardDetails);
