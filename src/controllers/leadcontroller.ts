@@ -17,6 +17,7 @@ export const newLead = async (
       serviceId,
       priority,
       amountDetails,
+      bankId,
     } = req.body;
 
     const userId = res.locals.userId;
@@ -46,6 +47,7 @@ export const newLead = async (
           where: {
             cardId: amount.cardId,
             serviceId: serviceId,
+            bankId,
           },
         });
 
@@ -55,6 +57,7 @@ export const newLead = async (
             due_date: new Date(amount.due_date),
             createdBy: userId,
             cardId: amount.cardId,
+            bankId: amount.bankId,
             serviceId: serviceId,
             follow_up_date: amount.follow_up_date
               ? new Date(amount.follow_up_date)
@@ -75,4 +78,3 @@ export const newLead = async (
     next(createError(500, "Error creating new lead", error));
   }
 };
-

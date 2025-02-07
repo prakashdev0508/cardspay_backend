@@ -9,31 +9,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllCardList = exports.deleteCardDetails = exports.updateCardDetails = exports.getCardDetails = exports.createNewCard = void 0;
+exports.getAllBankList = exports.updateBankDetails = exports.getBankDetails = exports.createNewbank = void 0;
 const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
-const createNewCard = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const createNewbank = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, bankId } = req.body;
-        if (!bankId) {
-            return next((0, resMessage_1.createError)(400, "Bank ID is required"));
-        }
-        if (!name) {
-            return next((0, resMessage_1.createError)(400, "Name is required"));
-        }
+        const { name } = req.body;
         const userId = res.locals.userId;
         if (!userId) {
             return next((0, resMessage_1.createError)(403, "No user found "));
         }
-        const bank = yield db_1.prisma.bankDetails.findFirst({
-            where: {
-                id: bankId,
-            },
-        });
-        if (!bank) {
-            return next((0, resMessage_1.createError)(400, "Bank not found"));
-        }
-        const service = yield db_1.prisma.cardsDetails.create({
+        const service = yield db_1.prisma.bankDetails.create({
             data: {
                 name: String(name),
                 created_by: userId,
@@ -45,10 +31,10 @@ const createNewCard = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         next((0, resMessage_1.createError)(500, "Error creating service"));
     }
 });
-exports.createNewCard = createNewCard;
-const getCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+exports.createNewbank = createNewbank;
+const getBankDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const cardDetails = yield db_1.prisma.cardsDetails.findMany({
+        const cardDetails = yield db_1.prisma.bankDetails.findMany({
             select: {
                 id: true,
                 name: true,
@@ -66,15 +52,15 @@ const getCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         next((0, resMessage_1.createError)(500, "Error fetching card details"));
     }
 });
-exports.getCardDetails = getCardDetails;
-const updateCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getBankDetails = getBankDetails;
+const updateBankDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id, name } = req.body;
         const userId = res.locals.userId;
         if (!userId) {
             return next((0, resMessage_1.createError)(403, "No user found "));
         }
-        const cardDetails = yield db_1.prisma.cardsDetails.update({
+        const cardDetails = yield db_1.prisma.bankDetails.update({
             where: {
                 id: id,
             },
@@ -88,33 +74,14 @@ const updateCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         next((0, resMessage_1.createError)(500, "Error updating card details"));
     }
 });
-exports.updateCardDetails = updateCardDetails;
-const deleteCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+exports.updateBankDetails = updateBankDetails;
+const getAllBankList = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id } = req.body;
-        const userId = res.locals.userId;
-        if (!userId) {
-            return next((0, resMessage_1.createError)(403, "No user found "));
-        }
-        const cardDetails = yield db_1.prisma.cardsDetails.delete({
-            where: {
-                id: id,
-            },
-        });
-        (0, resMessage_1.createSuccess)(res, "card details deleted successfully ", cardDetails);
-    }
-    catch (error) {
-        next((0, resMessage_1.createError)(500, "Error deleting card details"));
-    }
-});
-exports.deleteCardDetails = deleteCardDetails;
-const getAllCardList = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const cardDetails = yield db_1.prisma.cardsDetails.findMany();
+        const cardDetails = yield db_1.prisma.bankDetails.findMany();
         (0, resMessage_1.createSuccess)(res, "card details fetched successfully ", cardDetails);
     }
     catch (error) {
         next((0, resMessage_1.createError)(500, "Error fetching card details"));
     }
 });
-exports.getAllCardList = getAllCardList;
+exports.getAllBankList = getAllBankList;

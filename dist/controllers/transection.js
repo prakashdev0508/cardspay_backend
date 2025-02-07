@@ -82,6 +82,11 @@ const getAllTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
                         name: true,
                     },
                 },
+                bank: {
+                    select: {
+                        name: true,
+                    },
+                },
             },
             skip,
             take,
@@ -123,11 +128,12 @@ const updateTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         if (req.body.status) {
             updateData.status = req.body.status;
         }
-        if (req.body.cardId && req.body.serviceID) {
+        if (req.body.cardId && req.body.serviceID && req.body.bankId) {
             const charges = yield db_1.prisma.charges.findFirst({
                 where: {
                     cardId: req.body.cardId,
                     serviceId: req.body.serviceID,
+                    bankId: req.body.bankId,
                 },
             });
             if (charges) {

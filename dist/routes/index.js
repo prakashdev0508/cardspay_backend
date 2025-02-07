@@ -15,6 +15,7 @@ const charges_1 = require("../controllers/charges");
 const leadcontroller_1 = require("../controllers/leadcontroller");
 const transection_1 = require("../controllers/transection");
 const userController_1 = require("../controllers/userController");
+const bankController_1 = require("../controllers/bankController");
 const router = express_1.default.Router();
 //Company routes
 router.route("/company/create").post(companyController_1.registerCompany);
@@ -42,12 +43,18 @@ router.route("/services/all").get(auth_1.verifyToken, service_1.getServices);
 router
     .route("/cards/create")
     .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), cardController_1.createNewCard);
-router
-    .route("/cards/all")
-    .get(auth_1.verifyToken, cardController_1.getCardDetails);
+router.route("/cards/all").get(auth_1.verifyToken, cardController_1.getCardDetails);
 router
     .route("/cards/update")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), cardController_1.updateCardDetails);
+//Bank
+router
+    .route("/banks/create")
+    .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), bankController_1.createNewbank);
+router.route("/banks/all").get(auth_1.verifyToken, bankController_1.getBankDetails);
+router
+    .route("/banks/update")
+    .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), bankController_1.updateBankDetails);
 //Charges
 router
     .route("/charges/create")

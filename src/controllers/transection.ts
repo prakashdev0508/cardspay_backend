@@ -96,6 +96,11 @@ export const getAllTransaction = async (
             name: true,
           },
         },
+        bank: {
+          select: {
+            name: true,
+          },
+        },
       },
       skip,
       take,
@@ -155,11 +160,12 @@ export const updateTransaction = async (
     if (req.body.status) {
       updateData.status = req.body.status;
     }
-    if (req.body.cardId && req.body.serviceID) {
+    if (req.body.cardId && req.body.serviceID && req.body.bankId) {
       const charges = await prisma.charges.findFirst({
         where: {
           cardId: req.body.cardId,
           serviceId: req.body.serviceID,
+          bankId: req.body.bankId,
         },
       });
 
