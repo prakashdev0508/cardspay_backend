@@ -14,7 +14,7 @@ import {
 import { verifyToken } from "../middleware/auth";
 import { verifyRoles } from "../middleware/roles";
 import { allRoles, createRoles, assignRolesToUser } from "../controllers/roles";
-import { createNewService } from "../controllers/service";
+import { createNewService, getServices } from "../controllers/service";
 import {
   createNewCard,
   getCardDetails,
@@ -65,6 +65,8 @@ router
     createNewService
   );
 
+router.route("/services/all").get(verifyToken, getServices);
+
 //cards
 router
   .route("/cards/create")
@@ -78,7 +80,6 @@ router
   .route("/cards/all")
   .get(
     verifyToken,
-    verifyRoles(["super_admin", "finance_manager", "admin"]),
     getCardDetails
   );
 

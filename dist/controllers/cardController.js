@@ -34,14 +34,17 @@ const createNewCard = (req, res, next) => __awaiter(void 0, void 0, void 0, func
 exports.createNewCard = createNewCard;
 const getCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const userId = res.locals.userId;
-        if (!userId) {
-            return next((0, resMessage_1.createError)(403, "No user found "));
-        }
         const cardDetails = yield db_1.prisma.cardsDetails.findMany({
-            where: {
-                created_by: userId,
-            },
+            select: {
+                id: true,
+                name: true,
+                createdAt: true,
+                createdBy: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
         });
         (0, resMessage_1.createSuccess)(res, "card details fetched successfully ", cardDetails);
     }

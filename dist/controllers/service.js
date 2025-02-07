@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createNewService = void 0;
+exports.getServices = exports.createNewService = void 0;
 const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const createNewService = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -32,3 +32,24 @@ const createNewService = (req, res, next) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.createNewService = createNewService;
+const getServices = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const services = yield db_1.prisma.services.findMany({
+            select: {
+                id: true,
+                name: true,
+                createdAt: true,
+                createdBy: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        });
+        (0, resMessage_1.createSuccess)(res, "Services fetched successfully ", services);
+    }
+    catch (error) {
+        next((0, resMessage_1.createError)(500, "Error fetching services"));
+    }
+});
+exports.getServices = getServices;

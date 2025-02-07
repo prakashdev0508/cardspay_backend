@@ -29,3 +29,28 @@ export const createNewService = async (
     next(createError(500, "Error creating service"));
   }
 };
+
+export const getServices = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const services = await prisma.services.findMany({
+      select : {
+        id : true,
+        name : true,
+        createdAt : true,
+        createdBy : {
+          select : {
+            name : true
+          }
+        }
+      }
+    });
+
+    createSuccess(res, "Services fetched successfully ", services);
+  } catch (error) {
+    next(createError(500, "Error fetching services"));
+  }
+};

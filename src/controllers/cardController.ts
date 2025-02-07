@@ -35,18 +35,18 @@ export const getCardDetails = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = res.locals.userId;
-
-    if (!userId) {
-      return next(createError(403, "No user found "));
-    }
-
     const cardDetails = await prisma.cardsDetails.findMany({
-      where: {
-        created_by: userId,
-      },
+      select : {
+        id : true,
+        name : true,
+        createdAt : true,
+        createdBy : {
+          select : {
+            name : true
+          }
+        }
+      }
     });
-
     createSuccess(res, "card details fetched successfully ", cardDetails);
   } catch (error) {
     next(createError(500, "Error fetching card details"));
@@ -114,7 +114,6 @@ export const getAllCardList = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    
     const cardDetails = await prisma.cardsDetails.findMany();
 
     createSuccess(res, "card details fetched successfully ", cardDetails);
