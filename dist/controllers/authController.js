@@ -88,7 +88,14 @@ const userLogin = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             where: { email },
             select: {
                 id: true,
-                password: true
+                password: true,
+                userRoles: {
+                    include: {
+                        role: {
+                            select: { role_slug: true },
+                        },
+                    },
+                },
             }
         });
         if (!user) {
@@ -98,12 +105,14 @@ const userLogin = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         if (!isPasswordValid) {
             return next((0, resMessage_1.createError)(401, "Invalid credentials"));
         }
+        const roleSlugs = user.userRoles.map((userRole) => userRole.role.role_slug);
         const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, {
             expiresIn: "7d",
         });
         res.status(200).json({
             message: "Login successful",
             token,
+            roles: roleSlugs
         });
     }
     catch (error) {
