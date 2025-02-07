@@ -49,6 +49,11 @@ exports.createNewCard = createNewCard;
 const getCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const cardDetails = yield db_1.prisma.cardsDetails.findMany({
+            where: {
+                NOT: {
+                    is_deleted: true,
+                },
+            },
             select: {
                 id: true,
                 name: true,
@@ -91,17 +96,20 @@ const updateCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, 
 exports.updateCardDetails = updateCardDetails;
 const deleteCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id } = req.body;
+        const { id } = req.params;
         const userId = res.locals.userId;
         if (!userId) {
             return next((0, resMessage_1.createError)(403, "No user found "));
         }
-        const cardDetails = yield db_1.prisma.cardsDetails.delete({
+        const cardDetails = yield db_1.prisma.cardsDetails.update({
             where: {
                 id: id,
             },
+            data: {
+                is_deleted: true,
+            },
         });
-        (0, resMessage_1.createSuccess)(res, "card details deleted successfully ", cardDetails);
+        (0, resMessage_1.createSuccess)(res, "card details deleted successfully ");
     }
     catch (error) {
         next((0, resMessage_1.createError)(500, "Error deleting card details"));
@@ -110,7 +118,13 @@ const deleteCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, 
 exports.deleteCardDetails = deleteCardDetails;
 const getAllCardList = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const cardDetails = yield db_1.prisma.cardsDetails.findMany();
+        const cardDetails = yield db_1.prisma.cardsDetails.findMany({
+            where: {
+                NOT: {
+                    is_deleted: true,
+                },
+            },
+        });
         (0, resMessage_1.createSuccess)(res, "card details fetched successfully ", cardDetails);
     }
     catch (error) {

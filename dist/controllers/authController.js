@@ -89,6 +89,8 @@ const userLogin = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             select: {
                 id: true,
                 password: true,
+                is_active: true,
+                is_deleted: true,
                 userRoles: {
                     include: {
                         role: {
@@ -96,9 +98,9 @@ const userLogin = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                         },
                     },
                 },
-            }
+            },
         });
-        if (!user) {
+        if (!user || !user.is_active || user.is_deleted) {
             return next((0, resMessage_1.createError)(404, "User not found"));
         }
         const isPasswordValid = yield bcryptjs_1.default.compare(password, user.password);
@@ -112,7 +114,7 @@ const userLogin = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         res.status(200).json({
             message: "Login successful",
             token,
-            roles: roleSlugs
+            roles: roleSlugs,
         });
     }
     catch (error) {

@@ -107,9 +107,11 @@ export const userLogin = async (
 
     const user = await prisma.user.findUnique({
       where: { email },
-      select : {
-        id : true,
-        password : true,
+      select: {
+        id: true,
+        password: true,
+        is_active: true,
+        is_deleted: true,
         userRoles: {
           include: {
             role: {
@@ -117,10 +119,10 @@ export const userLogin = async (
             },
           },
         },
-      }
+      },
     });
 
-    if (!user) {
+    if (!user || !user.is_active || user.is_deleted) {
       return next(createError(404, "User not found"));
     }
 
@@ -131,7 +133,6 @@ export const userLogin = async (
 
     const roleSlugs = user.userRoles.map((userRole) => userRole.role.role_slug);
 
-
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
       expiresIn: "7d",
     });
@@ -139,7 +140,7 @@ export const userLogin = async (
     res.status(200).json({
       message: "Login successful",
       token,
-      roles : roleSlugs 
+      roles: roleSlugs,
     });
   } catch (error) {
     res.status(500).json({ message: "Error while login", error });
