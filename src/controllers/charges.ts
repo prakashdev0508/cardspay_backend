@@ -15,7 +15,29 @@ export const createNewCharges = async (
       additional_charge,
       cardId,
       serviceId,
+      bankId,
     } = req.body;
+
+    if (!bankId || !serviceId || !cardId) {
+      return next(createError(400, "Bank, Service and Card ID is required"));
+    }
+
+    const alreadtExist = await prisma.charges.findFirst({
+      where: {
+        cardId,
+        serviceId,
+        bankId,
+      },
+    });
+
+    if (alreadtExist) {
+      return next(
+        createError(
+          400,
+          "Charges already exist for this card, service and bank"
+        )
+      );
+    }
 
     const userId = res.locals.userId;
 
@@ -31,13 +53,14 @@ export const createNewCharges = async (
         additional_charge: Number(additional_charge),
         cardId,
         serviceId,
+        bankId,
         created_by: userId,
       },
     });
 
     createSuccess(res, "Charges created successfully ", { id: charges.id });
-  } catch (error) {
-    next(createError(500, "Error creating service"));
+  } catch (error: any) {
+    next(createError(500, "Error creating charges ", error));
   }
 };
 
@@ -59,6 +82,11 @@ export const getAllChargeList = async (
             name: true,
           },
         },
+        bank: {
+          select: {
+            name: true,
+          },
+        },
         service: {
           select: {
             name: true,
@@ -69,7 +97,7 @@ export const getAllChargeList = async (
 
     createSuccess(res, "All charges ", charges, 200);
   } catch (error) {
-    next(createError(500, "Error finding all charges "));
+    next(createError(500, "Error finding all charges ", error));
   }
 };
 

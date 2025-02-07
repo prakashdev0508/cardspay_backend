@@ -14,7 +14,7 @@ const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, mobile_number, city_name, area, expected_amount, serviceId, priority, amountDetails, } = req.body;
+        const { name, mobile_number, city_name, area, expected_amount, serviceId, priority, amountDetails, bankId, } = req.body;
         const userId = res.locals.userId;
         if (!userId) {
             return next((0, resMessage_1.createError)(403, "No user found"));
@@ -39,6 +39,7 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
                     where: {
                         cardId: amount.cardId,
                         serviceId: serviceId,
+                        bankId,
                     },
                 });
                 yield tx.transaction.create({
@@ -47,6 +48,7 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
                         due_date: new Date(amount.due_date),
                         createdBy: userId,
                         cardId: amount.cardId,
+                        bankId: amount.bankId,
                         serviceId: serviceId,
                         follow_up_date: amount.follow_up_date
                             ? new Date(amount.follow_up_date)

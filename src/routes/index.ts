@@ -33,6 +33,11 @@ import {
   updateTransaction,
 } from "../controllers/transection";
 import { userDetails } from "../controllers/userController";
+import {
+  createNewbank,
+  getBankDetails,
+  updateBankDetails,
+} from "../controllers/bankController";
 
 const router = express.Router();
 
@@ -76,12 +81,7 @@ router
     createNewCard
   );
 
-router
-  .route("/cards/all")
-  .get(
-    verifyToken,
-    getCardDetails
-  );
+router.route("/cards/all").get(verifyToken, getCardDetails);
 
 router
   .route("/cards/update")
@@ -89,6 +89,25 @@ router
     verifyToken,
     verifyRoles(["super_admin", "finance_manager", "admin"]),
     updateCardDetails
+  );
+
+//Bank
+router
+  .route("/banks/create")
+  .post(
+    verifyToken,
+    verifyRoles(["super_admin", "finance_manager", "admin"]),
+    createNewbank
+  );
+
+router.route("/banks/all").get(verifyToken, getBankDetails);
+
+router
+  .route("/banks/update")
+  .put(
+    verifyToken,
+    verifyRoles(["super_admin", "finance_manager", "admin"]),
+    updateBankDetails
   );
 
 //Charges

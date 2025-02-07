@@ -2,21 +2,13 @@ import { NextFunction, Request, Response } from "express";
 import { prisma } from "../utils/db";
 import { createError, createSuccess } from "../utils/resMessage";
 
-export const createNewCard = async (
+export const createNewbank = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { name, bankId } = req.body;
-
-    if (!bankId) {
-      return next(createError(400, "Bank ID is required"));
-    }
-
-    if (!name) {
-      return next(createError(400, "Name is required"));
-    }
+    const { name } = req.body;
 
     const userId = res.locals.userId;
 
@@ -24,17 +16,7 @@ export const createNewCard = async (
       return next(createError(403, "No user found "));
     }
 
-    const bank = await prisma.bankDetails.findFirst({
-      where: {
-        id: bankId,
-      },
-    });
-
-    if (!bank) {
-      return next(createError(400, "Bank not found"));
-    }
-
-    const service = await prisma.cardsDetails.create({
+    const service = await prisma.bankDetails.create({
       data: {
         name: String(name),
         created_by: userId,
@@ -47,13 +29,13 @@ export const createNewCard = async (
   }
 };
 
-export const getCardDetails = async (
+export const getBankDetails = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const cardDetails = await prisma.cardsDetails.findMany({
+    const cardDetails = await prisma.bankDetails.findMany({
       select: {
         id: true,
         name: true,
@@ -71,7 +53,7 @@ export const getCardDetails = async (
   }
 };
 
-export const updateCardDetails = async (
+export const updateBankDetails = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -85,7 +67,7 @@ export const updateCardDetails = async (
       return next(createError(403, "No user found "));
     }
 
-    const cardDetails = await prisma.cardsDetails.update({
+    const cardDetails = await prisma.bankDetails.update({
       where: {
         id: id,
       },
@@ -100,39 +82,13 @@ export const updateCardDetails = async (
   }
 };
 
-export const deleteCardDetails = async (
+export const getAllBankList = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { id } = req.body;
-
-    const userId = res.locals.userId;
-
-    if (!userId) {
-      return next(createError(403, "No user found "));
-    }
-
-    const cardDetails = await prisma.cardsDetails.delete({
-      where: {
-        id: id,
-      },
-    });
-
-    createSuccess(res, "card details deleted successfully ", cardDetails);
-  } catch (error) {
-    next(createError(500, "Error deleting card details"));
-  }
-};
-
-export const getAllCardList = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const cardDetails = await prisma.cardsDetails.findMany();
+    const cardDetails = await prisma.bankDetails.findMany();
 
     createSuccess(res, "card details fetched successfully ", cardDetails);
   } catch (error) {

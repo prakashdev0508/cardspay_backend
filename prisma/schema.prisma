@@ -63,11 +63,12 @@ model User {
   is_active  Boolean @default(true)
   is_deleted Boolean @default(false)
 
-  customerInfo    CustomerData[]
-  services    Services[]
-  cardDetails CardsDetails[]
-  charges     Charges[]
-  transaction Transaction[]
+  customerInfo CustomerData[]
+  services     Services[]
+  cardDetails  CardsDetails[]
+  charges      Charges[]
+  transaction  Transaction[]
+  bankDetails  BankDetails[]
 
   email_verified_at DateTime?
   is_verified       Boolean   @default(false)
@@ -97,7 +98,23 @@ model Services {
   created_by String
   createdBy  User   @relation(fields: [created_by], references: [id])
 
-  charge Charges?
+  charge      Charges[]
+  transaction Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BankDetails {
+  id   String @id @default(cuid())
+  name String
+
+  created_by String
+  createdBy  User   @relation(fields: [created_by], references: [id])
+
+  cardDetails CardsDetails[]
+  charges     Charges[]
+
   transaction Transaction[]
 
   createdAt DateTime @default(now())
@@ -111,8 +128,11 @@ model CardsDetails {
   created_by String
   createdBy  User   @relation(fields: [created_by], references: [id])
 
-  charge Charges?
+  charge Charges[]
   amount Transaction[]
+
+  bankId String?
+  bank   BankDetails? @relation(fields: [bankId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -125,14 +145,17 @@ model Charges {
   platform_charge   Int?
   additional_charge Int?
 
-  cardId String?       @unique
+  cardId String?
   card   CardsDetails? @relation(fields: [cardId], references: [id])
 
-  serviceId String?   @unique
+  serviceId String?
   service   Services? @relation(fields: [serviceId], references: [id])
 
   created_by String
   createdBy  User   @relation(fields: [created_by], references: [id])
+
+  bankId String?
+  bank   BankDetails? @relation(fields: [bankId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -156,11 +179,10 @@ model CustomerData {
   service         Services? @relation(fields: [serviceId], references: [id])
 
   created_by String
-  createdBy  User   @relation(fields: [created_by], references: [id])
-  amount Transaction[]
+  createdBy  User          @relation(fields: [created_by], references: [id])
+  amount     Transaction[]
 
   priority Priority @default(MEDIUM)
-  
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -175,31 +197,36 @@ enum Status {
 }
 
 model Transaction {
-  id String @id @default(cuid())
+  id          String   @id @default(cuid())
   bill_amount Int
-  due_date DateTime
+  due_date    DateTime
 
-  cardId String?      
-  cardType   CardsDetails? @relation(fields: [cardId], references: [id])
+  cardId   String?
+  cardType CardsDetails? @relation(fields: [cardId], references: [id])
 
-  status Status @default(PENDING)
-  follow_up_date DateTime?
-  user_charge Int?
-  company_charge Int? 
-  platform_charge Int?
+  status            Status    @default(PENDING)
+  follow_up_date    DateTime?
+  user_charge       Int?
+  company_charge    Int?
+  platform_charge   Int?
   additional_charge Int?
 
   serviceId String?
   service   Services? @relation(fields: [serviceId], references: [id])
 
+  serviceName String?
+  bankName    String?
+  cardName    String?
+
+  bankId String?
+  bank   BankDetails? @relation(fields: [bankId], references: [id])
 
   leadId String?
   lead   CustomerData? @relation(fields: [leadId], references: [id])
 
-  createdBy String
-  createdByUser User @relation(fields: [createdBy], references: [id])
+  createdBy     String
+  createdByUser User   @relation(fields: [createdBy], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 }
