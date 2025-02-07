@@ -73,6 +73,8 @@ model User {
   email_verified_at DateTime?
   is_verified       Boolean   @default(false)
 
+  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -101,6 +103,9 @@ model Services {
   charge      Charges[]
   transaction Transaction[]
 
+    is_deleted Boolean @default(false)
+
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -116,6 +121,9 @@ model BankDetails {
   charges     Charges[]
 
   transaction Transaction[]
+
+    is_deleted Boolean @default(false)
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -133,6 +141,9 @@ model CardsDetails {
 
   bankId String?
   bank   BankDetails? @relation(fields: [bankId], references: [id])
+
+    is_deleted Boolean @default(false)
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -156,6 +167,9 @@ model Charges {
 
   bankId String?
   bank   BankDetails? @relation(fields: [bankId], references: [id])
+
+    is_deleted Boolean @default(false)
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -183,6 +197,9 @@ model CustomerData {
   amount     Transaction[]
 
   priority Priority @default(MEDIUM)
+
+  is_deleted Boolean @default(false)
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -226,6 +243,8 @@ model Transaction {
 
   createdBy     String
   createdByUser User   @relation(fields: [createdBy], references: [id])
+
+  is_deleted Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

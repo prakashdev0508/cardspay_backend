@@ -32,7 +32,7 @@ import {
   getAllTransaction,
   updateTransaction,
 } from "../controllers/transection";
-import { userDetails } from "../controllers/userController";
+import { deactivateUser, userDetails } from "../controllers/userController";
 import {
   createNewbank,
   getBankDetails,
@@ -55,6 +55,9 @@ router.route("/user/send-password-link").post(resendUpdatePasswordLink);
 router.route("/user/update-password").post(updatePasswordfromLink);
 router.route("/user/manual-update-password").post(verifyToken, updatePassword);
 router.route("/user-details").get(verifyToken, userDetails);
+router
+  .route("/user/toggel-user/:id")
+  .put(verifyToken, verifyRoles(["super_admin"]), deactivateUser);
 
 //Roles
 router.route("/role/create").post(verifyToken, createRoles);
@@ -89,6 +92,14 @@ router
     verifyToken,
     verifyRoles(["super_admin", "finance_manager", "admin"]),
     updateCardDetails
+  );
+
+router
+  .route("/cards/delete/:id")
+  .delete(
+    verifyToken,
+    verifyRoles(["super_admin", "finance_manager", "admin"]),
+    deleteCardDetails
   );
 
 //Bank

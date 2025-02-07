@@ -31,6 +31,8 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             where: { id: decoded.userId },
             select: {
                 id: true,
+                is_active: true,
+                is_deleted: true,
                 userRoles: {
                     include: {
                         role: {
@@ -42,6 +44,9 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         });
         if (!user) {
             return next((0, resMessage_1.createError)(404, "User not found"));
+        }
+        if (user.is_deleted || !user.is_active) {
+            return next((0, resMessage_1.createError)(404, "User is not active or deleted"));
         }
         const roleSlugs = user.userRoles.map((userRole) => userRole.role.role_slug);
         res.locals.userId = user.id;

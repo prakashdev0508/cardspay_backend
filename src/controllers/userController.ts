@@ -33,3 +33,38 @@ export const userDetails = async (
     next(createError(400, "Error getting user data "));
   }
 };
+
+export const deactivateUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const userData = await prisma.user.findUnique({
+      where: { id: id },
+      select: {
+        is_active: true,
+      },
+    });
+
+    if (!userData) {
+      return next(createError(404, "User not found"));
+    }
+
+    const user = await prisma.user.update({
+      where: { id: id },
+      data: {
+        is_active: !userData.is_active,
+      },
+    });
+
+    createSuccess(
+      res,
+      `User ${user.is_active ? "activated" : "deactivated"} successfully`
+    );
+  } catch (error) {
+    next(createError(400, "Error deactivating user "));
+  }
+};

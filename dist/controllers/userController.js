@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userDetails = void 0;
+exports.deactivateUser = exports.userDetails = void 0;
 const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const userDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -37,3 +37,28 @@ const userDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.userDetails = userDetails;
+const deactivateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const userData = yield db_1.prisma.user.findUnique({
+            where: { id: id },
+            select: {
+                is_active: true,
+            },
+        });
+        if (!userData) {
+            return next((0, resMessage_1.createError)(404, "User not found"));
+        }
+        const user = yield db_1.prisma.user.update({
+            where: { id: id },
+            data: {
+                is_active: !userData.is_active,
+            },
+        });
+        (0, resMessage_1.createSuccess)(res, `User ${user.is_active ? "activated" : "deactivated"} successfully`);
+    }
+    catch (error) {
+        next((0, resMessage_1.createError)(400, "Error deactivating user "));
+    }
+});
+exports.deactivateUser = deactivateUser;

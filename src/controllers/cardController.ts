@@ -54,6 +54,11 @@ export const getCardDetails = async (
 ): Promise<void> => {
   try {
     const cardDetails = await prisma.cardsDetails.findMany({
+      where: {
+        NOT: {
+          is_deleted: true,
+        },
+      },
       select: {
         id: true,
         name: true,
@@ -106,7 +111,7 @@ export const deleteCardDetails = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     const userId = res.locals.userId;
 
@@ -114,13 +119,16 @@ export const deleteCardDetails = async (
       return next(createError(403, "No user found "));
     }
 
-    const cardDetails = await prisma.cardsDetails.delete({
+    const cardDetails = await prisma.cardsDetails.update({
       where: {
         id: id,
       },
+      data: {
+        is_deleted: true,
+      },
     });
 
-    createSuccess(res, "card details deleted successfully ", cardDetails);
+    createSuccess(res, "card details deleted successfully ");
   } catch (error) {
     next(createError(500, "Error deleting card details"));
   }
@@ -132,7 +140,13 @@ export const getAllCardList = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const cardDetails = await prisma.cardsDetails.findMany();
+    const cardDetails = await prisma.cardsDetails.findMany({
+      where: {
+        NOT: {
+          is_deleted: true,
+        },
+      },
+    });
 
     createSuccess(res, "card details fetched successfully ", cardDetails);
   } catch (error) {

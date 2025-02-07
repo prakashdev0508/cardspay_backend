@@ -27,6 +27,8 @@ export const verifyToken = async (
       where: { id: decoded.userId },
       select: {
         id: true,
+        is_active: true,
+        is_deleted: true,
         userRoles: {
           include: {
             role: {
@@ -40,6 +42,11 @@ export const verifyToken = async (
     if (!user) {
       return next(createError(404, "User not found"));
     }
+
+    if (user.is_deleted || !user.is_active) {
+      return next(createError(404, "User is not active or deleted"));
+    }
+
 
     const roleSlugs = user.userRoles.map((userRole) => userRole.role.role_slug);
     res.locals.userId = user.id;
