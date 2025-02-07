@@ -14,6 +14,7 @@ const cardController_1 = require("../controllers/cardController");
 const charges_1 = require("../controllers/charges");
 const leadcontroller_1 = require("../controllers/leadcontroller");
 const transection_1 = require("../controllers/transection");
+const userController_1 = require("../controllers/userController");
 const router = express_1.default.Router();
 //Company routes
 router.route("/company/create").post(companyController_1.registerCompany);
@@ -27,6 +28,7 @@ router.route("/user/login").post(authController_1.userLogin);
 router.route("/user/send-password-link").post(authController_1.resendUpdatePasswordLink);
 router.route("/user/update-password").post(authController_1.updatePasswordfromLink);
 router.route("/user/manual-update-password").post(auth_1.verifyToken, authController_1.updatePassword);
+router.route("/user-details").get(auth_1.verifyToken, userController_1.userDetails);
 //Roles
 router.route("/role/create").post(auth_1.verifyToken, roles_2.createRoles);
 router.route("/role/all").get(auth_1.verifyToken, roles_2.allRoles);
