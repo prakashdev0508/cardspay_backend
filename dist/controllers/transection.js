@@ -86,10 +86,17 @@ const getAllTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
             skip,
             take,
         });
+        const transactionData = transactions.map((transaction) => {
+            return Object.assign(Object.assign({}, transaction), { userChargeAmount: transaction.user_charge
+                    ? (transaction.bill_amount * (transaction === null || transaction === void 0 ? void 0 : transaction.user_charge)) / 100
+                    : null, companyChargeAmount: transaction.company_charge
+                    ? (transaction.bill_amount * (transaction === null || transaction === void 0 ? void 0 : transaction.company_charge)) / 100
+                    : null });
+        });
         const totalTransactions = yield db_1.prisma.transaction.count({
             where: filters,
         });
-        (0, resMessage_1.createSuccess)(res, "Data fetched", { transactions, totalTransactions, page, perPage }, 200);
+        (0, resMessage_1.createSuccess)(res, "Data fetched", { transactionData, totalTransactions, page, perPage }, 200);
     }
     catch (error) {
         console.log("err", error);

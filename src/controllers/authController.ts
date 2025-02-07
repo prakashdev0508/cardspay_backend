@@ -109,7 +109,14 @@ export const userLogin = async (
       where: { email },
       select : {
         id : true,
-        password : true
+        password : true,
+        userRoles: {
+          include: {
+            role: {
+              select: { role_slug: true },
+            },
+          },
+        },
       }
     });
 
@@ -122,6 +129,9 @@ export const userLogin = async (
       return next(createError(401, "Invalid credentials"));
     }
 
+    const roleSlugs = user.userRoles.map((userRole) => userRole.role.role_slug);
+
+
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
       expiresIn: "7d",
     });
@@ -129,6 +139,7 @@ export const userLogin = async (
     res.status(200).json({
       message: "Login successful",
       token,
+      roles : roleSlugs 
     });
   } catch (error) {
     res.status(500).json({ message: "Error while login", error });
