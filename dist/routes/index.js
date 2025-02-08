@@ -47,6 +47,7 @@ router
     .route("/cards/create")
     .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), cardController_1.createNewCard);
 router.route("/cards/all").get(auth_1.verifyToken, cardController_1.getCardDetails);
+router.route("/cards_by_bank").get(auth_1.verifyToken, cardController_1.getCardDetailsByBank);
 router
     .route("/cards/update")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), cardController_1.updateCardDetails);

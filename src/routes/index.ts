@@ -20,6 +20,7 @@ import {
   getCardDetails,
   updateCardDetails,
   deleteCardDetails,
+  getCardDetailsByBank,
 } from "../controllers/cardController";
 import {
   createNewCharges,
@@ -85,6 +86,7 @@ router
   );
 
 router.route("/cards/all").get(verifyToken, getCardDetails);
+router.route("/cards_by_bank").get(verifyToken, getCardDetailsByBank);
 
 router
   .route("/cards/update")
