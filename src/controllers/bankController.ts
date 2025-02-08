@@ -10,6 +10,21 @@ export const createNewbank = async (
   try {
     const { name } = req.body;
 
+    if (!name) {
+      return next(createError(404, "Please add name "));
+    }
+
+    const existBank = await prisma.bankDetails.findFirst({
+      where: {
+        name: name.trim(),
+      },
+    });
+
+    if (existBank) {
+      return next(createError(400, "Bank name already exist"));
+    }
+
+
     const userId = res.locals.userId;
 
     if (!userId) {
@@ -18,7 +33,7 @@ export const createNewbank = async (
 
     const service = await prisma.bankDetails.create({
       data: {
-        name: String(name),
+        name: String(name).trim(),
         created_by: userId,
       },
     });
