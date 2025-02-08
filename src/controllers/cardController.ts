@@ -36,7 +36,7 @@ export const createNewCard = async (
 
     const service = await prisma.cardsDetails.create({
       data: {
-        name: String(name),
+        name: String(name).trim(),
         created_by: userId,
       },
     });

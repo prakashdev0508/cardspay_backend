@@ -35,7 +35,7 @@ const createNewCard = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         }
         const service = yield db_1.prisma.cardsDetails.create({
             data: {
-                name: String(name),
+                name: String(name).trim(),
                 created_by: userId,
             },
         });

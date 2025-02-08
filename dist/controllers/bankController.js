@@ -15,13 +15,24 @@ const resMessage_1 = require("../utils/resMessage");
 const createNewbank = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name } = req.body;
+        if (!name) {
+            return next((0, resMessage_1.createError)(404, "Please add name "));
+        }
+        const existBank = yield db_1.prisma.bankDetails.findFirst({
+            where: {
+                name: name.trim(),
+            },
+        });
+        if (existBank) {
+            return next((0, resMessage_1.createError)(400, "Bank name already exist"));
+        }
         const userId = res.locals.userId;
         if (!userId) {
             return next((0, resMessage_1.createError)(403, "No user found "));
         }
         const service = yield db_1.prisma.bankDetails.create({
             data: {
-                name: String(name),
+                name: String(name).trim(),
                 created_by: userId,
             },
         });
