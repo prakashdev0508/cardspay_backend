@@ -94,6 +94,7 @@ export const getCardDetails = async (
         bank: {
           select: {
             name: true,
+            id: true,
           },
         },
         createdBy: {
@@ -140,6 +141,20 @@ export const updateCardDetails = async (
     }
 
     if (bankId) {
+      if (bankId === existCard.bankId) {
+        return next(createError(400, "Bank already assigned to this card"));
+      }
+
+      const bank = await prisma.bankDetails.findFirst({
+        where: {
+          id: bankId,
+        },
+      });
+
+      if (!bank) {
+        return next(createError(400, "Bank not found"));
+      }
+
       updateData.bankId = bankId;
     }
 
