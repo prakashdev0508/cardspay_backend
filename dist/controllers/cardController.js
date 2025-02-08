@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllCardList = exports.deleteCardDetails = exports.updateCardDetails = exports.getCardDetails = exports.createNewCard = void 0;
+exports.getAllCardList = exports.deleteCardDetails = exports.updateCardDetails = exports.getCardDetails = exports.getCardDetailsByBank = exports.createNewCard = void 0;
 const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const createNewCard = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -37,6 +37,7 @@ const createNewCard = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             data: {
                 name: String(name).trim(),
                 created_by: userId,
+                bankId: bankId,
             },
         });
         (0, resMessage_1.createSuccess)(res, "card created successfully ", { id: service.id });
@@ -46,6 +47,27 @@ const createNewCard = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.createNewCard = createNewCard;
+const getCardDetailsByBank = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { bankId } = req.body;
+        if (!bankId) {
+            return next((0, resMessage_1.createError)(400, "Bank ID is required"));
+        }
+        const cardDetails = yield db_1.prisma.cardsDetails.findMany({
+            where: {
+                bankId: bankId,
+                NOT: {
+                    is_deleted: true,
+                },
+            },
+        });
+        (0, resMessage_1.createSuccess)(res, "card details fetched successfully ", cardDetails);
+    }
+    catch (error) {
+        next((0, resMessage_1.createError)(500, "Error fetching card details"));
+    }
+});
+exports.getCardDetailsByBank = getCardDetailsByBank;
 const getCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const cardDetails = yield db_1.prisma.cardsDetails.findMany({
@@ -58,6 +80,11 @@ const getCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 id: true,
                 name: true,
                 createdAt: true,
+                bank: {
+                    select: {
+                        name: true,
+                    },
+                },
                 createdBy: {
                     select: {
                         name: true,
