@@ -101,18 +101,31 @@ const getCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
 exports.getCardDetails = getCardDetails;
 const updateCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id, name } = req.body;
+        const { id, name, bankId } = req.body;
         const userId = res.locals.userId;
         if (!userId) {
             return next((0, resMessage_1.createError)(403, "No user found "));
+        }
+        const existCard = yield db_1.prisma.cardsDetails.findFirst({
+            where: {
+                id: id,
+            },
+        });
+        if (!existCard) {
+            return next((0, resMessage_1.createError)(400, "Card not found"));
+        }
+        const updateData = {};
+        if (name) {
+            updateData.name = name;
+        }
+        if (bankId) {
+            updateData.bankId = bankId;
         }
         const cardDetails = yield db_1.prisma.cardsDetails.update({
             where: {
                 id: id,
             },
-            data: {
-                name: name,
-            },
+            data: updateData,
         });
         (0, resMessage_1.createSuccess)(res, "card details updated successfully ", cardDetails);
     }

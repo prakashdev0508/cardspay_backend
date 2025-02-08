@@ -115,7 +115,7 @@ export const updateCardDetails = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { id, name } = req.body;
+    const { id, name, bankId } = req.body;
 
     const userId = res.locals.userId;
 
@@ -123,13 +123,31 @@ export const updateCardDetails = async (
       return next(createError(403, "No user found "));
     }
 
+    const existCard = await prisma.cardsDetails.findFirst({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!existCard) {
+      return next(createError(400, "Card not found"));
+    }
+
+    const updateData: any = {};
+
+    if (name) {
+      updateData.name = name;
+    }
+
+    if (bankId) {
+      updateData.bankId = bankId;
+    }
+
     const cardDetails = await prisma.cardsDetails.update({
       where: {
         id: id,
       },
-      data: {
-        name: name,
-      },
+      data: updateData,
     });
 
     createSuccess(res, "card details updated successfully ", cardDetails);
