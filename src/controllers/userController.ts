@@ -89,6 +89,15 @@ export const allUsers = async (
             transaction: true,
           },
         },
+        userRoles: {
+          select: {
+            role: {
+              select: {
+                role_slug: true,
+              },
+            },
+          },
+        },
         transaction: {
           select: {
             id: true,
@@ -98,7 +107,22 @@ export const allUsers = async (
       },
     });
 
-    res.status(200).json({ message: "All Users", users });
+    const usersData = users.map((user) => {
+      const roleSlugs = user.userRoles.map(
+        (userRole) => userRole.role.role_slug
+      );
+      return {
+        id: user.id,
+        email: user.email,
+        phone_number: user.phone_number,
+        name: user.name,
+        roles: roleSlugs,
+        transaction_count: user._count.transaction,
+        transactions: user.transaction,
+      };
+    });
+
+    res.status(200).json({ message: "All Users", usersData });
   } catch (error) {
     next(createError(400, "Error getting all users "));
   }
