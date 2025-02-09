@@ -68,3 +68,38 @@ export const deactivateUser = async (
     next(createError(400, "Error deactivating user "));
   }
 };
+
+export const allUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        is_active: true,
+      },
+      select: {
+        id: true,
+        email: true,
+        phone_number: true,
+        name: true,
+        _count: {
+          select: {
+            transaction: true,
+          },
+        },
+        transaction: {
+          select: {
+            id: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json({ message: "All Users", users });
+  } catch (error) {
+    next(createError(400, "Error getting all users "));
+  }
+};

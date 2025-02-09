@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivateUser = exports.userDetails = void 0;
+exports.allUsers = exports.deactivateUser = exports.userDetails = void 0;
 const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const userDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -62,3 +62,34 @@ const deactivateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.deactivateUser = deactivateUser;
+const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const users = yield db_1.prisma.user.findMany({
+            where: {
+                is_active: true,
+            },
+            select: {
+                id: true,
+                email: true,
+                phone_number: true,
+                name: true,
+                _count: {
+                    select: {
+                        transaction: true,
+                    },
+                },
+                transaction: {
+                    select: {
+                        id: true,
+                        status: true,
+                    },
+                },
+            },
+        });
+        res.status(200).json({ message: "All Users", users });
+    }
+    catch (error) {
+        next((0, resMessage_1.createError)(400, "Error getting all users "));
+    }
+});
+exports.allUsers = allUsers;
