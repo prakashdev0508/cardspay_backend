@@ -127,3 +127,54 @@ export const allUsers = async (
     next(createError(400, "Error getting all users "));
   }
 };
+
+export const userById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+      select: {
+        id: true,
+        email: true,
+        phone_number: true,
+        name: true,
+        is_active: true,
+        userRoles: {
+          select: {
+            role: {
+              select: {
+                role_slug: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return next(createError(404, "User not found"));
+    }
+
+    const roleSlugs = user.userRoles.map(
+      (userRole) => userRole.role.role_slug
+    );
+
+    const userData = {
+      id: user.id,
+      email: user.email,
+      phone_number: user.phone_number,
+      name: user.name,
+      is_active: user.is_active,
+      roles: roleSlugs,
+    };
+
+    res.status(200).json({ message: "User Data", userData });
+  } catch (error) {
+    next(createError(400, "Error getting user data "));
+  }
+}
