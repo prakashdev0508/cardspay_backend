@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateTransaction = exports.getAllTransaction = void 0;
+exports.completeTransaction = exports.depositTransaction = exports.updateTransaction = exports.getAllTransaction = void 0;
 const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const getAllTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -126,6 +126,9 @@ const updateTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
             updateData.follow_up_date = new Date(req.body.follow_up_date);
         }
         if (req.body.status) {
+            if (req.body.status === "COMPLETED") {
+                return next((0, resMessage_1.createError)(400, "Cannot update status to COMPLETED"));
+            }
             updateData.status = req.body.status;
         }
         if (req.body.cardId && req.body.serviceID && req.body.bankId) {
@@ -158,3 +161,65 @@ const updateTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.updateTransaction = updateTransaction;
+const depositTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { transactionId, type, amount } = req.params;
+        if (!transactionId) {
+            return next((0, resMessage_1.createError)(400, "Transaction ID is required"));
+        }
+        const transaction = yield db_1.prisma.transaction.findUnique({
+            where: { id: transactionId },
+        });
+        if (!transaction) {
+            return next((0, resMessage_1.createError)(404, "Transaction not found"));
+        }
+        if (transaction.status === "COMPLETED") {
+            return next((0, resMessage_1.createError)(400, "Transaction already completed"));
+        }
+        if (type == "add") {
+            transaction.deposit_amount =
+                (transaction === null || transaction === void 0 ? void 0 : transaction.deposit_amount) + Number(amount);
+        }
+        if (type == "remove") {
+            transaction.deposit_amount =
+                (transaction === null || transaction === void 0 ? void 0 : transaction.deposit_amount) - Number(amount);
+        }
+        const updatedTransaction = yield db_1.prisma.transaction.update({
+            where: { id: transactionId },
+            data: { deposit_amount: transaction.deposit_amount },
+        });
+        (0, resMessage_1.createSuccess)(res, "Transaction updated successfully", updatedTransaction, 200);
+    }
+    catch (error) {
+        console.log("Error completing transaction:", error);
+        next((0, resMessage_1.createError)(500, "Error completing transaction", error));
+    }
+});
+exports.depositTransaction = depositTransaction;
+const completeTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { transactionId } = req.params;
+        if (!transactionId) {
+            return next((0, resMessage_1.createError)(400, "Transaction ID is required"));
+        }
+        const transaction = yield db_1.prisma.transaction.findUnique({
+            where: { id: transactionId },
+        });
+        if (!transaction) {
+            return next((0, resMessage_1.createError)(404, "Transaction not found"));
+        }
+        if (transaction.status === "COMPLETED") {
+            return next((0, resMessage_1.createError)(400, "Transaction already completed"));
+        }
+        const updatedTransaction = yield db_1.prisma.transaction.update({
+            where: { id: transactionId },
+            data: { status: "COMPLETED" },
+        });
+        (0, resMessage_1.createSuccess)(res, "Transaction updated successfully", updatedTransaction, 200);
+    }
+    catch (error) {
+        console.log("Error completing transaction:", error);
+        next((0, resMessage_1.createError)(500, "Error completing transaction", error));
+    }
+});
+exports.completeTransaction = completeTransaction;

@@ -235,6 +235,8 @@ model Transaction {
   bankName    String?
   cardName    String?
 
+  deposit_amount Int? @default(0)
+
   bankId String?
   bank   BankDetails? @relation(fields: [bankId], references: [id])
 

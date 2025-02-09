@@ -21,7 +21,7 @@ const router = express_1.default.Router();
 router.route("/company/create").post(companyController_1.registerCompany);
 router
     .route("/all-companies")
-    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admi", "admi"]), companyController_1.getAllCompany);
+    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), companyController_1.getAllCompany);
 //User routes
 router.route("/user/create").post(authController_1.userRegister);
 router.route("/user/send-password").post(authController_1.sendUserDetails);
