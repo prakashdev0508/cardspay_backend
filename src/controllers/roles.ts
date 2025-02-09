@@ -29,7 +29,7 @@ export const createRoles = async (
 
     const roles = await prisma.roles.create({
       data: {
-        role_name: name,
+        role_name: String(name).trim(),
         role_slug: String(name).toLowerCase().replace(/\s+/g, "_"),
       },
     });
