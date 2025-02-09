@@ -31,6 +31,8 @@ import {
 import { newLead } from "../controllers/leadcontroller";
 import {
   getAllTransaction,
+  getMonthlyFollowUps,
+  getTransactionById,
   updateTransaction,
 } from "../controllers/transection";
 import {
@@ -181,6 +183,9 @@ router
     verifyRoles(["super_admin", "finance_manager", "admin", "sales"]),
     getAllTransaction
   );
+
+router.route("/transaction/follow-up-calender").post(verifyToken, getMonthlyFollowUps);
+router.route("/transaction-details/:transactionId").get(verifyToken, getTransactionById);
 
 router
   .route("/transaction/update/:transactionId")

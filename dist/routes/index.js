@@ -88,6 +88,8 @@ router
 router
     .route("/transaction/all")
     .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), transection_1.getAllTransaction);
+router.route("/transaction/follow-up-calender").post(auth_1.verifyToken, transection_1.getMonthlyFollowUps);
+router.route("/transaction-details/:transactionId").get(auth_1.verifyToken, transection_1.getTransactionById);
 router
     .route("/transaction/update/:transactionId")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), transection_1.updateTransaction);

@@ -19,6 +19,9 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         if (!userId) {
             return next((0, resMessage_1.createError)(403, "No user found"));
         }
+        if (!mobile_number) {
+            return next((0, resMessage_1.createError)(400, "Mobile number is required"));
+        }
         yield db_1.prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             // Step 1: Create a new lead
             const lead = yield tx.customerData.create({
