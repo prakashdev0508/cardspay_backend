@@ -292,3 +292,178 @@ export const completeTransaction = async (
     next(createError(500, "Error completing transaction", error));
   }
 };
+
+export const getTransactionById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { transactionId } = req.params;
+
+    if (!transactionId) {
+      return next(createError(400, "Transaction ID is required"));
+    }
+
+    const userId = res.locals.userId;
+    const roles = res.locals.roles;
+
+    if (!userId) {
+      return next(createError(403, "No user found"));
+    }
+
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+      select: {
+        id: true,
+        bill_amount: true,
+        due_date: true,
+        follow_up_date: true,
+        status: true,
+        user_charge: true,
+        company_charge: true,
+        platform_charge: true,
+        additional_charge: true,
+        createdBy: true,
+        lead: {
+          select: {
+            name: true,
+            mobile_number: true,
+            city_name: true,
+            area: true,
+          },
+        },
+        cardType: {
+          select: {
+            name: true,
+          },
+        },
+        service: {
+          select: {
+            name: true,
+          },
+        },
+        bank: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (
+      !roles.includes("super_admin") &&
+      !roles.includes("admin") &&
+      !roles.includes("finance_manager")
+    ) {
+      if (transaction?.createdBy !== userId) {
+        return next(createError(403, "Unauthorized access"));
+      }
+    }
+
+    if (!transaction) {
+      return next(createError(404, "Transaction not found"));
+    }
+
+    const transactionData = {
+      ...transaction,
+      userChargeAmount: transaction.user_charge
+        ? (transaction.bill_amount * transaction?.user_charge) / 100
+        : null,
+      companyChargeAmount: transaction.company_charge
+        ? (transaction.bill_amount * transaction?.company_charge) / 100
+        : null,
+    };
+
+    createSuccess(res, "Data fetched", transactionData, 200);
+  } catch (error) {
+    console.log("Error fetching transaction:", error);
+    next(createError(500, "Error fetching transaction", error));
+  }
+};
+
+
+export const getMonthlyFollowUps = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = res.locals.userId;
+    const roles = res.locals.roles;
+
+    if (!userId) {
+      return next(createError(403, "No user found"));
+    }
+
+    const { month, year } = req.body;
+
+    if (!month || !year) {
+      return next(createError(400, "Month and Year are required"));
+    }
+
+    const startDate = new Date(Number(year), Number(month) - 1, 1);
+    const endDate = new Date(Number(year), Number(month), 0, 23, 59, 59);
+
+    const filters: any = {
+      follow_up_date: {
+        gte: startDate,
+        lte: endDate,
+      },
+      status: {
+        not: "COMPLETED",
+      },
+    };
+
+    if (
+      !roles.includes("super_admin") &&
+      !roles.includes("admin") &&
+      !roles.includes("finance_manager")
+    ) {
+      filters.createdBy = userId;
+    }
+
+    const transactions = await prisma.transaction.findMany({
+      where: filters,
+      select: {
+        id: true,
+        follow_up_date: true,
+        bill_amount: true,
+        status: true,
+        lead: {
+          select: {
+            name: true,
+            mobile_number: true,
+          },
+        },
+        service: {
+          select: {
+            name: true,
+          },
+        },
+        bank: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const groupedFollowUps: Record<string, any[]> = {};
+
+    transactions.forEach((transaction) => {
+      if (transaction.follow_up_date) {
+        const dateKey = transaction.follow_up_date.toISOString().split("T")[0];
+        if (!groupedFollowUps[dateKey]) {
+          groupedFollowUps[dateKey] = [];
+        }
+        groupedFollowUps[dateKey].push(transaction);
+      }
+    });
+
+    createSuccess(res, "Follow-up data retrieved", groupedFollowUps, 200);
+  } catch (error) {
+    console.log("Error fetching follow-ups:", error);
+    next(createError(500, "Error fetching follow-ups", error));
+  }
+};

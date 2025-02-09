@@ -26,6 +26,10 @@ export const newLead = async (
       return next(createError(403, "No user found"));
     }
 
+    if(!mobile_number) {
+      return next(createError(400, "Mobile number is required"));
+    }
+
     await prisma.$transaction(async (tx) => {
       // Step 1: Create a new lead
       const lead = await tx.customerData.create({
