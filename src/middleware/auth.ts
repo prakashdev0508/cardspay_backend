@@ -47,7 +47,6 @@ export const verifyToken = async (
       return next(createError(404, "User is not active or deleted"));
     }
 
-
     const roleSlugs = user.userRoles.map((userRole) => userRole.role.role_slug);
     res.locals.userId = user.id;
     res.locals.roles = roleSlugs;
