@@ -49,6 +49,9 @@ export const allRoles = async (
 ): Promise<void> => {
   try {
     const roles = await prisma.roles.findMany({
+      where : {
+        is_active: true,
+      },
       select: {
         id: true,
         role_name: true,
@@ -118,3 +121,39 @@ export const assignRolesToUser = async (
     next(createError(500, "Error assigning roles to user", error));
   }
 };
+
+
+export const deactivateRole = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const role = await prisma.roles.findUnique({
+      where: { id: id },
+      select: {
+        is_active: true,
+      },
+    });
+
+    if (!role) {
+      return next(createError(404, "Role not found"));
+    }
+
+    const updatedRole = await prisma.roles.update({
+      where: { id: id },
+      data: {
+        is_active: !role.is_active,
+      },
+    });
+
+    createSuccess(
+      res,
+      `Role ${updatedRole.is_active ? "activated" : "deactivated"} successfully`
+    );
+  } catch (error) {
+    next(createError(400, "Error deactivating role "));
+  }
+}

@@ -13,7 +13,7 @@ import {
 } from "../controllers/authController";
 import { verifyToken } from "../middleware/auth";
 import { verifyRoles } from "../middleware/roles";
-import { allRoles, createRoles, assignRolesToUser } from "../controllers/roles";
+import { allRoles, createRoles, assignRolesToUser, deactivateRole } from "../controllers/roles";
 import { createNewService, getServices } from "../controllers/service";
 import {
   createNewCard,
@@ -73,6 +73,7 @@ router
 router.route("/role/create").post(verifyToken, createRoles);
 router.route("/role/all").get(verifyToken, allRoles);
 router.route("/role/assign").post(verifyToken, assignRolesToUser);
+router.route("/role/dectivate/:id").put(verifyToken, verifyRoles(["super_admin"]) ,deactivateRole);
 
 // Service
 router
