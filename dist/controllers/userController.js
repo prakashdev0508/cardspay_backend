@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.allUsers = exports.deactivateUser = exports.userDetails = void 0;
+exports.userById = exports.allUsers = exports.deactivateUser = exports.userDetails = void 0;
 const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const userDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -114,3 +114,44 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.allUsers = allUsers;
+const userById = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const user = yield db_1.prisma.user.findUnique({
+            where: { id: id },
+            select: {
+                id: true,
+                email: true,
+                phone_number: true,
+                name: true,
+                is_active: true,
+                userRoles: {
+                    select: {
+                        role: {
+                            select: {
+                                role_slug: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        if (!user) {
+            return next((0, resMessage_1.createError)(404, "User not found"));
+        }
+        const roleSlugs = user.userRoles.map((userRole) => userRole.role.role_slug);
+        const userData = {
+            id: user.id,
+            email: user.email,
+            phone_number: user.phone_number,
+            name: user.name,
+            is_active: user.is_active,
+            roles: roleSlugs,
+        };
+        res.status(200).json({ message: "User Data", userData });
+    }
+    catch (error) {
+        next((0, resMessage_1.createError)(400, "Error getting user data "));
+    }
+});
+exports.userById = userById;

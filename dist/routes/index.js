@@ -30,7 +30,10 @@ router.route("/user/send-password-link").post(authController_1.resendUpdatePassw
 router.route("/user/update-password").post(authController_1.updatePasswordfromLink);
 router.route("/user/manual-update-password").post(auth_1.verifyToken, authController_1.updatePassword);
 router.route("/user-details").get(auth_1.verifyToken, userController_1.userDetails);
-router.route("/user/all").get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin"]), userController_1.allUsers);
+router
+    .route("/user/all")
+    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin"]), userController_1.allUsers);
+router.route("/user-detail/:id").get(auth_1.verifyToken, userController_1.userById);
 router
     .route("/user/toggel-user/:id")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin"]), userController_1.deactivateUser);
