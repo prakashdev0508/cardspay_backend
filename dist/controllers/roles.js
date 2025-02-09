@@ -30,7 +30,7 @@ const createRoles = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         const roles = yield db_1.prisma.roles.create({
             data: {
                 role_name: String(name).trim(),
-                role_slug: String(name).toLowerCase().replace(/\s+/g, "_"),
+                role_slug: String(name).trim().toLowerCase().replace(/\s+/g, "_"),
             },
         });
         if (roles) {
