@@ -46,7 +46,7 @@ const router = express.Router();
 router.route("/company/create").post(registerCompany);
 router
   .route("/all-companies")
-  .get(verifyToken, verifyRoles(["super_admi", "admi"]), getAllCompany);
+  .get(verifyToken, verifyRoles(["super_admin", "admin"]), getAllCompany);
 
 //User routes
 router.route("/user/create").post(userRegister);

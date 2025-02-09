@@ -158,6 +158,9 @@ export const updateTransaction = async (
       updateData.follow_up_date = new Date(req.body.follow_up_date);
     }
     if (req.body.status) {
+      if (req.body.status === "COMPLETED") {
+        return next(createError(400, "Cannot update status to COMPLETED"));
+      }
       updateData.status = req.body.status;
     }
     if (req.body.cardId && req.body.serviceID && req.body.bankId) {
@@ -195,5 +198,97 @@ export const updateTransaction = async (
   } catch (error) {
     console.log("Error updating transaction:", error);
     next(createError(500, "Error updating transaction", error));
+  }
+};
+
+export const depositTransaction = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { transactionId, type, amount } = req.params;
+
+    if (!transactionId) {
+      return next(createError(400, "Transaction ID is required"));
+    }
+
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+    });
+
+    if (!transaction) {
+      return next(createError(404, "Transaction not found"));
+    }
+
+    if (transaction.status === "COMPLETED") {
+      return next(createError(400, "Transaction already completed"));
+    }
+
+    if (type == "add") {
+      transaction.deposit_amount =
+        (transaction?.deposit_amount as number) + Number(amount);
+    }
+
+    if (type == "remove") {
+      transaction.deposit_amount =
+        (transaction?.deposit_amount as number) - Number(amount);
+    }
+
+    const updatedTransaction = await prisma.transaction.update({
+      where: { id: transactionId },
+      data: { deposit_amount: transaction.deposit_amount },
+    });
+
+    createSuccess(
+      res,
+      "Transaction updated successfully",
+      updatedTransaction,
+      200
+    );
+  } catch (error) {
+    console.log("Error completing transaction:", error);
+    next(createError(500, "Error completing transaction", error));
+  }
+};
+
+export const completeTransaction = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { transactionId } = req.params;
+
+    if (!transactionId) {
+      return next(createError(400, "Transaction ID is required"));
+    }
+
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+    });
+
+    if (!transaction) {
+      return next(createError(404, "Transaction not found"));
+    }
+
+    if (transaction.status === "COMPLETED") {
+      return next(createError(400, "Transaction already completed"));
+    }
+
+    const updatedTransaction = await prisma.transaction.update({
+      where: { id: transactionId },
+      data: { status: "COMPLETED" },
+    });
+
+    createSuccess(
+      res,
+      "Transaction updated successfully",
+      updatedTransaction,
+      200
+    );
+  } catch (error) {
+    console.log("Error completing transaction:", error);
+    next(createError(500, "Error completing transaction", error));
   }
 };
