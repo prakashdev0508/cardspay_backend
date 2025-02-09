@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assignRolesToUser = exports.allRoles = exports.createRoles = void 0;
+exports.deactivateRole = exports.assignRolesToUser = exports.allRoles = exports.createRoles = void 0;
 const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const createRoles = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -45,6 +45,9 @@ exports.createRoles = createRoles;
 const allRoles = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const roles = yield db_1.prisma.roles.findMany({
+            where: {
+                is_active: true,
+            },
             select: {
                 id: true,
                 role_name: true,
@@ -103,3 +106,28 @@ const assignRolesToUser = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.assignRolesToUser = assignRolesToUser;
+const deactivateRole = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const role = yield db_1.prisma.roles.findUnique({
+            where: { id: id },
+            select: {
+                is_active: true,
+            },
+        });
+        if (!role) {
+            return next((0, resMessage_1.createError)(404, "Role not found"));
+        }
+        const updatedRole = yield db_1.prisma.roles.update({
+            where: { id: id },
+            data: {
+                is_active: !role.is_active,
+            },
+        });
+        (0, resMessage_1.createSuccess)(res, `Role ${updatedRole.is_active ? "activated" : "deactivated"} successfully`);
+    }
+    catch (error) {
+        next((0, resMessage_1.createError)(400, "Error deactivating role "));
+    }
+});
+exports.deactivateRole = deactivateRole;
