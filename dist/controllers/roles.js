@@ -48,6 +48,7 @@ const allRoles = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             select: {
                 id: true,
                 role_name: true,
+                role_slug: true,
             },
         });
         (0, resMessage_1.createSuccess)(res, "All roles", roles, 200);

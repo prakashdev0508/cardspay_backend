@@ -52,6 +52,7 @@ export const allRoles = async (
       select: {
         id: true,
         role_name: true,
+        role_slug: true,
       },
     });
 
