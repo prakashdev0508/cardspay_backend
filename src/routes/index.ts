@@ -33,7 +33,7 @@ import {
   getAllTransaction,
   updateTransaction,
 } from "../controllers/transection";
-import { deactivateUser, userDetails } from "../controllers/userController";
+import { allUsers, deactivateUser, userDetails } from "../controllers/userController";
 import {
   createNewbank,
   getBankDetails,
@@ -56,6 +56,7 @@ router.route("/user/send-password-link").post(resendUpdatePasswordLink);
 router.route("/user/update-password").post(updatePasswordfromLink);
 router.route("/user/manual-update-password").post(verifyToken, updatePassword);
 router.route("/user-details").get(verifyToken, userDetails);
+router.route("/user/all").get(verifyToken, verifyRoles(["super_admin"]), allUsers);
 router
   .route("/user/toggel-user/:id")
   .put(verifyToken, verifyRoles(["super_admin"]), deactivateUser);
