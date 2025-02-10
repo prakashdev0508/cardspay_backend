@@ -41,7 +41,9 @@ router
 router.route("/role/create").post(auth_1.verifyToken, roles_2.createRoles);
 router.route("/role/all").get(auth_1.verifyToken, roles_2.allRoles);
 router.route("/role/assign").post(auth_1.verifyToken, roles_2.assignRolesToUser);
-router.route("/role/dectivate/:id").put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin"]), roles_2.deactivateRole);
+router
+    .route("/role/dectivate/:id")
+    .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin"]), roles_2.deactivateRole);
 // Service
 router
     .route("/services/create")
@@ -84,13 +86,21 @@ router
 router
     .route("/lead/create")
     .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), leadcontroller_1.newLead);
+router.route("/leadData").get(auth_1.verifyToken, leadcontroller_1.getCustomerData);
 //Transaction
 router
     .route("/transaction/all")
     .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), transection_1.getAllTransaction);
-router.route("/transaction/follow-up-calender").post(auth_1.verifyToken, transection_1.getMonthlyFollowUps);
-router.route("/transaction-details/:transactionId").get(auth_1.verifyToken, transection_1.getTransactionById);
+router
+    .route("/transaction/follow-up-calender")
+    .post(auth_1.verifyToken, transection_1.getMonthlyFollowUps);
+router
+    .route("/transaction-details/:transactionId")
+    .get(auth_1.verifyToken, transection_1.getTransactionById);
 router
     .route("/transaction/update/:transactionId")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), transection_1.updateTransaction);
+router
+    .route("/transaction/add-new-transactions")
+    .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), leadcontroller_1.addNewTransaction);
 exports.default = router;

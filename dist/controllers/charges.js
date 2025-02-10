@@ -62,16 +62,19 @@ const getAllChargeList = (req, res, next) => __awaiter(void 0, void 0, void 0, f
                 company_charge: true,
                 card: {
                     select: {
+                        id: true,
                         name: true,
                     },
                 },
                 bank: {
                     select: {
+                        id: true,
                         name: true,
                     },
                 },
                 service: {
                     select: {
+                        id: true,
                         name: true,
                     },
                 },
@@ -133,8 +136,11 @@ const deleteCharge = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             return next((0, resMessage_1.createError)(404, "Charge not found"));
         }
         // Delete the charge
-        yield db_1.prisma.charges.delete({
+        yield db_1.prisma.charges.update({
             where: { id },
+            data: {
+                is_deleted: true
+            }
         });
         (0, resMessage_1.createSuccess)(res, "Charge deleted successfully");
     }

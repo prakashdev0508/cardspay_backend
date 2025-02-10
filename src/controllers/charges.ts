@@ -79,16 +79,19 @@ export const getAllChargeList = async (
         company_charge: true,
         card: {
           select: {
+            id: true,
             name: true,
           },
         },
         bank: {
           select: {
+            id: true,
             name: true,
           },
         },
         service: {
           select: {
+            id: true,
             name: true,
           },
         },
@@ -176,8 +179,11 @@ export const deleteCharge = async (
     }
 
     // Delete the charge
-    await prisma.charges.delete({
+    await prisma.charges.update({
       where: { id },
+      data: {
+        is_deleted: true  
+      }
     });
 
     createSuccess(res, "Charge deleted successfully");
