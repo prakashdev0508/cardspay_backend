@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.newLead = void 0;
+exports.addNewTransaction = exports.getCustomerData = exports.newLead = void 0;
 const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -73,3 +73,90 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.newLead = newLead;
+const getCustomerData = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { mobilenumber, name } = req.query;
+        const userId = res.locals.userId;
+        const roles = res.locals.roles;
+        const filters = {};
+        if (!roles.includes("super_admin") &&
+            !roles.includes("admin") &&
+            !roles.includes("finance_manager")) {
+            filters.createdBy = userId;
+        }
+        if (mobilenumber) {
+            filters.mobile_number = mobilenumber;
+        }
+        if (name) {
+            filters.name = name;
+        }
+        const customerData = yield db_1.prisma.customerData.findMany({
+            where: filters,
+        });
+        (0, resMessage_1.createSuccess)(res, "Data fetched", customerData, 200);
+    }
+    catch (error) {
+        console.log("err", error);
+        next((0, resMessage_1.createError)(500, "Error fetching data", error));
+    }
+});
+exports.getCustomerData = getCustomerData;
+const addNewTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { leadId, amountDetails } = req.body;
+        if (!leadId) {
+            return next((0, resMessage_1.createError)(400, "Lead id is required"));
+        }
+        if (!amountDetails || amountDetails.length === 0) {
+            return next((0, resMessage_1.createError)(400, "Amount details are required"));
+        }
+        const userId = res.locals.userId;
+        const lead = yield db_1.prisma.customerData.findUnique({
+            where: {
+                id: leadId,
+            },
+        });
+        if (!lead) {
+            return next((0, resMessage_1.createError)(400, "Lead not found"));
+        }
+        yield db_1.prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            // Step 1: Insert amount details transactions
+            for (const amount of amountDetails) {
+                const charges = yield tx.charges.findFirst({
+                    where: {
+                        cardId: amount.cardId,
+                        serviceId: lead.serviceId,
+                        bankId: amount.bankId,
+                    },
+                });
+                if (!charges) {
+                    return next((0, resMessage_1.createError)(400, "Charges not found for card and bank"));
+                }
+                yield tx.transaction.create({
+                    data: {
+                        bill_amount: amount.bill_amount,
+                        due_date: new Date(amount.due_date),
+                        createdBy: userId,
+                        cardId: amount.cardId,
+                        bankId: amount.bankId,
+                        serviceId: lead.serviceId,
+                        follow_up_date: amount.follow_up_date
+                            ? new Date(amount.follow_up_date)
+                            : null,
+                        user_charge: charges === null || charges === void 0 ? void 0 : charges.user_charge,
+                        company_charge: charges === null || charges === void 0 ? void 0 : charges.company_charge,
+                        platform_charge: charges === null || charges === void 0 ? void 0 : charges.platform_charge,
+                        additional_charge: charges === null || charges === void 0 ? void 0 : charges.additional_charge,
+                        leadId: lead.id,
+                    },
+                });
+            }
+            (0, resMessage_1.createSuccess)(res, "Data added", { id: lead.id }, 200);
+        }));
+    }
+    catch (error) {
+        console.log("err", error);
+        next((0, resMessage_1.createError)(500, "Error creating new transaction", error));
+    }
+});
+exports.addNewTransaction = addNewTransaction;

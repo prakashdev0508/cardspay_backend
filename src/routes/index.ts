@@ -13,7 +13,12 @@ import {
 } from "../controllers/authController";
 import { verifyToken } from "../middleware/auth";
 import { verifyRoles } from "../middleware/roles";
-import { allRoles, createRoles, assignRolesToUser, deactivateRole } from "../controllers/roles";
+import {
+  allRoles,
+  createRoles,
+  assignRolesToUser,
+  deactivateRole,
+} from "../controllers/roles";
 import { createNewService, getServices } from "../controllers/service";
 import {
   createNewCard,
@@ -28,7 +33,11 @@ import {
   getAllChargeList,
   updateCharges,
 } from "../controllers/charges";
-import { newLead } from "../controllers/leadcontroller";
+import {
+  addNewTransaction,
+  getCustomerData,
+  newLead,
+} from "../controllers/leadcontroller";
 import {
   getAllTransaction,
   getMonthlyFollowUps,
@@ -75,7 +84,9 @@ router
 router.route("/role/create").post(verifyToken, createRoles);
 router.route("/role/all").get(verifyToken, allRoles);
 router.route("/role/assign").post(verifyToken, assignRolesToUser);
-router.route("/role/dectivate/:id").put(verifyToken, verifyRoles(["super_admin"]) ,deactivateRole);
+router
+  .route("/role/dectivate/:id")
+  .put(verifyToken, verifyRoles(["super_admin"]), deactivateRole);
 
 // Service
 router
@@ -175,6 +186,8 @@ router
     newLead
   );
 
+router.route("/leadData").get(verifyToken, getCustomerData);
+
 //Transaction
 router
   .route("/transaction/all")
@@ -184,8 +197,12 @@ router
     getAllTransaction
   );
 
-router.route("/transaction/follow-up-calender").post(verifyToken, getMonthlyFollowUps);
-router.route("/transaction-details/:transactionId").get(verifyToken, getTransactionById);
+router
+  .route("/transaction/follow-up-calender")
+  .post(verifyToken, getMonthlyFollowUps);
+router
+  .route("/transaction-details/:transactionId")
+  .get(verifyToken, getTransactionById);
 
 router
   .route("/transaction/update/:transactionId")
@@ -194,4 +211,13 @@ router
     verifyRoles(["super_admin", "finance_manager", "admin", "sales"]),
     updateTransaction
   );
+
+router
+  .route("/transaction/add-new-transactions")
+  .post(
+    verifyToken,
+    verifyRoles(["super_admin", "finance_manager", "admin", "sales"]),
+    addNewTransaction
+  );
+
 export default router;
