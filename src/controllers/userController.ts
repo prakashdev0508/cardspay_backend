@@ -96,12 +96,6 @@ export const allUsers = async (
             },
           },
         },
-        transaction: {
-          select: {
-            id: true,
-            status: true,
-          },
-        },
       },
     });
 
@@ -115,8 +109,8 @@ export const allUsers = async (
         phone_number: user.phone_number,
         name: user.name,
         roles: roleSlugs,
+        is_active: user.is_active,
         transaction_count: user._count.transaction,
-        transactions: user.transaction,
       };
     });
 
