@@ -85,12 +85,6 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                         },
                     },
                 },
-                transaction: {
-                    select: {
-                        id: true,
-                        status: true,
-                    },
-                },
             },
         });
         const usersData = users.map((user) => {
@@ -101,8 +95,8 @@ const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                 phone_number: user.phone_number,
                 name: user.name,
                 roles: roleSlugs,
+                is_active: user.is_active,
                 transaction_count: user._count.transaction,
-                transactions: user.transaction,
             };
         });
         res.status(200).json({ message: "All Users", usersData });
