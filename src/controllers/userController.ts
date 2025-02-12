@@ -76,13 +76,11 @@ export const allUsers = async (
 ): Promise<void> => {
   try {
     const users = await prisma.user.findMany({
-      where: {
-        is_active: true,
-      },
       select: {
         id: true,
         email: true,
         phone_number: true,
+        is_active: true,
         name: true,
         _count: {
           select: {
