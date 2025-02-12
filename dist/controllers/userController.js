@@ -65,13 +65,11 @@ exports.deactivateUser = deactivateUser;
 const allUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const users = yield db_1.prisma.user.findMany({
-            where: {
-                is_active: true,
-            },
             select: {
                 id: true,
                 email: true,
                 phone_number: true,
+                is_active: true,
                 name: true,
                 _count: {
                     select: {
