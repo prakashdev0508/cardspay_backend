@@ -132,7 +132,6 @@ export const updateCharges = async (
 
     const userName = res.locals.userName;
 
-
     // Check if charge exists
     const existingCharge = await prisma.charges.findUnique({
       where: { id },
@@ -183,28 +182,32 @@ export const updateCharges = async (
     });
 
     if (update_transaction) {
-      const updatedTransaction = await prisma.transaction.updateMany({
+      const updatedTransaction = await prisma.transaction.findMany({
         where: {
           cardId,
           serviceId: serviceId,
           bankId,
         },
-        data: {
-          user_charge: updatedCharge.user_charge,
-          company_charge: updatedCharge.company_charge,
-          platform_charge: updatedCharge.platform_charge,
-          additional_charge: updatedCharge.additional_charge,
-          bankId: updatedCharge.bankId,
-          cardId: updatedCharge.cardId,
-          serviceId: updatedCharge.serviceId,
-          bankName: bank.name,
-          cardName: card.name,
-          serviceName: service.name,
-          lastUpdatedBy: userName,
-        },
       });
 
-      console.log(updatedTransaction);
+      updatedTransaction.forEach(async (transaction) => {
+        await prisma.transaction.update({
+          where: { id: transaction.id },
+          data: {
+            user_charge: updatedCharge.user_charge,
+            company_charge: updatedCharge.company_charge,
+            platform_charge: updatedCharge.platform_charge,
+            additional_charge: updatedCharge.additional_charge,
+            bankId: updatedCharge.bankId,
+            cardId: updatedCharge.cardId,
+            serviceId: updatedCharge.serviceId,
+            bankName: bank.name,
+            cardName: card.name,
+            serviceName: service.name,
+            lastUpdatedBy: userName,
+          },
+        });
+      });
 
       if (!updatedTransaction) {
         return next(createError(500, "Error updating transactions "));
