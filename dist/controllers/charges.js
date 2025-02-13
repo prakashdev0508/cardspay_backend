@@ -140,27 +140,31 @@ const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             },
         });
         if (update_transaction) {
-            const updatedTransaction = yield db_1.prisma.transaction.updateMany({
+            const updatedTransaction = yield db_1.prisma.transaction.findMany({
                 where: {
                     cardId,
                     serviceId: serviceId,
                     bankId,
                 },
-                data: {
-                    user_charge: updatedCharge.user_charge,
-                    company_charge: updatedCharge.company_charge,
-                    platform_charge: updatedCharge.platform_charge,
-                    additional_charge: updatedCharge.additional_charge,
-                    bankId: updatedCharge.bankId,
-                    cardId: updatedCharge.cardId,
-                    serviceId: updatedCharge.serviceId,
-                    bankName: bank.name,
-                    cardName: card.name,
-                    serviceName: service.name,
-                    lastUpdatedBy: userName,
-                },
             });
-            console.log(updatedTransaction);
+            updatedTransaction.forEach((transaction) => __awaiter(void 0, void 0, void 0, function* () {
+                yield db_1.prisma.transaction.update({
+                    where: { id: transaction.id },
+                    data: {
+                        user_charge: updatedCharge.user_charge,
+                        company_charge: updatedCharge.company_charge,
+                        platform_charge: updatedCharge.platform_charge,
+                        additional_charge: updatedCharge.additional_charge,
+                        bankId: updatedCharge.bankId,
+                        cardId: updatedCharge.cardId,
+                        serviceId: updatedCharge.serviceId,
+                        bankName: bank.name,
+                        cardName: card.name,
+                        serviceName: service.name,
+                        lastUpdatedBy: userName,
+                    },
+                });
+            }));
             if (!updatedTransaction) {
                 return next((0, resMessage_1.createError)(500, "Error updating transactions "));
             }

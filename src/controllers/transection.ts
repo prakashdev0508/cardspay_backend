@@ -152,6 +152,10 @@ export const updateTransaction = async (
       where: { id: transactionId },
     });
 
+    if (!transaction) {
+      return next(createError(404, "Transaction not found"));
+    }
+
     if (!transactionId) {
       return next(createError(400, "Transaction ID is required"));
     }

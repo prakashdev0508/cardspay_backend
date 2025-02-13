@@ -120,6 +120,9 @@ const updateTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         const transaction = yield db_1.prisma.transaction.findUnique({
             where: { id: transactionId },
         });
+        if (!transaction) {
+            return next((0, resMessage_1.createError)(404, "Transaction not found"));
+        }
         if (!transactionId) {
             return next((0, resMessage_1.createError)(400, "Transaction ID is required"));
         }
