@@ -24,7 +24,11 @@ export const userRegister = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { name, email, company_id } = req.body;
+    const { name, email, roleIds, mobile_number } = req.body;
+
+    if (!roleIds || !Array.isArray(roleIds)) {
+      return next(createError(400, "User ID and Role IDs array are required"));
+    }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -34,13 +38,29 @@ export const userRegister = async (
     const plainPassword = generatePassword();
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
+    const company_id = res.locals.companyId;
+
+    if (!company_id) {
+      return next(createError(403, "No data found please login again "));
+    }
+
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
         company_id,
+        phone_number: String(mobile_number),
       },
+    });
+
+    const userRolesData = roleIds.map((roleId) => ({
+      userId: user.id,
+      roleId,
+    }));
+
+    await prisma.userRoles.createMany({
+      data: userRolesData,
     });
 
     await sendEmail(

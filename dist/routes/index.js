@@ -23,7 +23,9 @@ router
     .route("/all-companies")
     .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), companyController_1.getAllCompany);
 //User routes
-router.route("/user/create").post(authController_1.userRegister);
+router
+    .route("/user/create")
+    .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), authController_1.userRegister);
 router.route("/user/send-password").post(authController_1.sendUserDetails);
 router.route("/user/login").post(authController_1.userLogin);
 router.route("/user/send-password-link").post(authController_1.resendUpdatePasswordLink);
@@ -32,18 +34,18 @@ router.route("/user/manual-update-password").post(auth_1.verifyToken, authContro
 router.route("/user-details").get(auth_1.verifyToken, userController_1.userDetails);
 router
     .route("/user/all")
-    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin"]), userController_1.allUsers);
+    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), userController_1.allUsers);
 router.route("/user-detail/:id").get(auth_1.verifyToken, userController_1.userById);
 router
     .route("/user/toggel-user/:id")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin"]), userController_1.deactivateUser);
 //Roles
-router.route("/role/create").post(auth_1.verifyToken, roles_2.createRoles);
-router.route("/role/all").get(auth_1.verifyToken, roles_2.allRoles);
-router.route("/role/assign").post(auth_1.verifyToken, roles_2.assignRolesToUser);
+router.route("/role/create").post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.createRoles);
+router.route("/role/all").get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.allRoles);
+router.route("/role/assign").post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.assignRolesToUser);
 router
     .route("/role/dectivate/:id")
-    .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin"]), roles_2.deactivateRole);
+    .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.deactivateRole);
 // Service
 router
     .route("/services/create")

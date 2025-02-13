@@ -18,6 +18,7 @@ export const userDetails = async (
         phone_number: true,
         name: true,
         is_active: true,
+        company_id: true,
       },
     });
 

@@ -27,20 +27,35 @@ const generatePassword = () => {
 exports.generatePassword = generatePassword;
 const userRegister = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, email, company_id } = req.body;
+        const { name, email, roleIds, mobile_number } = req.body;
+        if (!roleIds || !Array.isArray(roleIds)) {
+            return next((0, resMessage_1.createError)(400, "User ID and Role IDs array are required"));
+        }
         const existingUser = yield prisma.user.findUnique({ where: { email } });
         if (existingUser) {
             return next((0, resMessage_1.createError)(400, "Email already exist"));
         }
         const plainPassword = (0, exports.generatePassword)();
         const hashedPassword = yield bcryptjs_1.default.hash(plainPassword, 10);
+        const company_id = res.locals.companyId;
+        if (!company_id) {
+            return next((0, resMessage_1.createError)(403, "No data found please login again "));
+        }
         const user = yield prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
                 company_id,
+                phone_number: String(mobile_number),
             },
+        });
+        const userRolesData = roleIds.map((roleId) => ({
+            userId: user.id,
+            roleId,
+        }));
+        yield prisma.userRoles.createMany({
+            data: userRolesData,
         });
         yield (0, emails_1.sendEmail)(email, "Your account credentials", `Your account credentials are:\nEmail: ${email}\nPassword: ${plainPassword}`);
         res.status(201).json({ message: "User registered successfully", user });

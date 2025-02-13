@@ -54,6 +54,9 @@ const getAllTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         }
         const transactions = yield db_1.prisma.transaction.findMany({
             where: filters,
+            orderBy: {
+                createdAt: "desc",
+            },
             select: {
                 id: true,
                 bill_amount: true,
@@ -87,6 +90,7 @@ const getAllTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
                         name: true,
                     },
                 },
+                createdAt: true,
             },
             skip,
             take,

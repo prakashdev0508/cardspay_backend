@@ -71,6 +71,9 @@ export const getAllChargeList = async (
 ): Promise<void> => {
   try {
     const charges = await prisma.charges.findMany({
+      where: {
+        is_deleted: false,
+      },
       select: {
         id: true,
         additional_charge: true,
@@ -118,6 +121,8 @@ export const updateCharges = async (
       additional_charge,
       cardId,
       serviceId,
+      bankId,
+      update_transaction,
     } = req.body;
 
     // Ensure ID is provided
@@ -132,6 +137,26 @@ export const updateCharges = async (
 
     if (!existingCharge) {
       return next(createError(404, "Charge not found"));
+    }
+    const bank = await prisma.bankDetails.findUnique({
+      where: {
+        id: bankId,
+      },
+    });
+
+    const card = await prisma.cardsDetails.findUnique({
+      where: {
+        id: cardId,
+      },
+    });
+
+    const service = await prisma.services.findUnique({
+      where: {
+        id: serviceId,
+      },
+    });
+    if (!bank || !card || !service) {
+      return next(createError(400, "Bank, Card or Service not found"));
     }
 
     // Update the charge
@@ -150,9 +175,37 @@ export const updateCharges = async (
             : undefined,
         cardId: cardId || existingCharge.cardId,
         serviceId: serviceId || existingCharge.serviceId,
+        bankId: bankId || existingCharge.bankId,
       },
     });
 
+    if (update_transaction) {
+      const updatedTransaction = await prisma.transaction.updateMany({
+        where: {
+          cardId,
+          serviceId: serviceId,
+          bankId,
+        },
+        data: {
+          user_charge: updatedCharge.user_charge,
+          company_charge: updatedCharge.company_charge,
+          platform_charge: updatedCharge.platform_charge,
+          additional_charge: updatedCharge.additional_charge,
+          bankId: updatedCharge.bankId,
+          cardId: updatedCharge.cardId,
+          serviceId: updatedCharge.serviceId,
+          bankName: bank.name,
+          cardName: card.name,
+          serviceName: service.name,
+        },
+      });
+
+      console.log(updatedTransaction);
+
+      if (!updatedTransaction) {
+        return next(createError(500, "Error updating transactions "));
+      }
+    }
     createSuccess(res, "Charge updated Successfully", { id: updatedCharge.id });
   } catch (error) {
     next(createError(500, "Error updating charge"));
@@ -182,8 +235,8 @@ export const deleteCharge = async (
     await prisma.charges.update({
       where: { id },
       data: {
-        is_deleted: true  
-      }
+        is_deleted: true,
+      },
     });
 
     createSuccess(res, "Charge deleted successfully");

@@ -8,14 +8,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllCompany = exports.registerCompany = void 0;
 const client_1 = require("@prisma/client");
 const resMessage_1 = require("../utils/resMessage");
+const authController_1 = require("./authController");
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const emails_1 = require("../utils/emails");
 const prisma = new client_1.PrismaClient();
 const registerCompany = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { company_name, registration_number, address, email, additinal_information, } = req.body;
+        const { company_name, registration_number, address, email, additinal_information, mobile_number, } = req.body;
         const result = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             const existingCompany = yield tx.company.findUnique({ where: { email } });
             const existingUser = yield tx.user.findUnique({ where: { email } });
@@ -31,7 +37,19 @@ const registerCompany = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                     email,
                 },
             });
-            return { company };
+            const plainPassword = (0, authController_1.generatePassword)();
+            const hashedPassword = yield bcryptjs_1.default.hash(plainPassword, 10);
+            const user = yield tx.user.create({
+                data: {
+                    email,
+                    name: company.company_name,
+                    company_id: company.id,
+                    password: hashedPassword,
+                    phone_number: String(mobile_number),
+                },
+            });
+            yield (0, emails_1.sendEmail)(email, "Your account credentials", `Your account credentials are:\nEmail: ${email}\nPassword: ${plainPassword}`);
+            return { company, user };
         }));
         res.status(201).json({
             success: true,

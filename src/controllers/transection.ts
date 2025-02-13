@@ -68,6 +68,9 @@ export const getAllTransaction = async (
 
     const transactions = await prisma.transaction.findMany({
       where: filters,
+      orderBy: {
+        createdAt: "desc",
+      },
       select: {
         id: true,
         bill_amount: true,
@@ -101,6 +104,7 @@ export const getAllTransaction = async (
             name: true,
           },
         },
+        createdAt: true,
       },
       skip,
       take,
@@ -381,7 +385,6 @@ export const getTransactionById = async (
     next(createError(500, "Error fetching transaction", error));
   }
 };
-
 
 export const getMonthlyFollowUps = async (
   req: Request,

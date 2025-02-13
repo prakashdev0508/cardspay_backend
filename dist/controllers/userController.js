@@ -23,6 +23,7 @@ const userDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 phone_number: true,
                 name: true,
                 is_active: true,
+                company_id: true,
             },
         });
         const userRoles = res.locals.roles;
