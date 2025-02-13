@@ -98,6 +98,7 @@ const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         if (!id) {
             return next((0, resMessage_1.createError)(400, "Charge ID is required"));
         }
+        const userName = res.locals.userName;
         // Check if charge exists
         const existingCharge = yield db_1.prisma.charges.findUnique({
             where: { id },
@@ -156,6 +157,7 @@ const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                     bankName: bank.name,
                     cardName: card.name,
                     serviceName: service.name,
+                    lastUpdatedBy: userName,
                 },
             });
             console.log(updatedTransaction);

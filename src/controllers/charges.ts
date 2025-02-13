@@ -130,6 +130,9 @@ export const updateCharges = async (
       return next(createError(400, "Charge ID is required"));
     }
 
+    const userName = res.locals.userName;
+
+
     // Check if charge exists
     const existingCharge = await prisma.charges.findUnique({
       where: { id },
@@ -197,6 +200,7 @@ export const updateCharges = async (
           bankName: bank.name,
           cardName: card.name,
           serviceName: service.name,
+          lastUpdatedBy: userName,
         },
       });
 
