@@ -34,6 +34,7 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 is_active: true,
                 is_deleted: true,
                 company_id: true,
+                name: true,
                 userRoles: {
                     include: {
                         role: {
@@ -53,6 +54,7 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         res.locals.userId = user.id;
         res.locals.roles = roleSlugs;
         res.locals.companyId = user.company_id;
+        res.locals.userName = user.name;
         next();
     }
     catch (error) {

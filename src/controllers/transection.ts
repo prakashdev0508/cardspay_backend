@@ -146,11 +146,19 @@ export const updateTransaction = async (
   try {
     const { transactionId } = req.params;
 
+    const userName = res.locals.userName;
+
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+    });
+
     if (!transactionId) {
       return next(createError(400, "Transaction ID is required"));
     }
 
-    const updateData: any = {};
+    const updateData: any = {
+      lastUpdatedBy : userName,
+    };
 
     if (req.body.bill_amount !== undefined) {
       updateData.bill_amount = req.body.bill_amount;
@@ -325,6 +333,7 @@ export const getTransactionById = async (
         follow_up_date: true,
         status: true,
         user_charge: true,
+        transactionHistory: true,
         company_charge: true,
         platform_charge: true,
         additional_charge: true,

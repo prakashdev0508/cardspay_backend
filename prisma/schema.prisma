@@ -227,6 +227,7 @@ model Transaction {
   company_charge    Int?
   platform_charge   Int?
   additional_charge Int?
+  transactionHistory Json?
 
   serviceId String?
   service   Services? @relation(fields: [serviceId], references: [id])
@@ -247,6 +248,7 @@ model Transaction {
   createdByUser User   @relation(fields: [createdBy], references: [id])
 
   is_deleted Boolean @default(false)
+  lastUpdatedBy String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
