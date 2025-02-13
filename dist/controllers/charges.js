@@ -54,6 +54,9 @@ exports.createNewCharges = createNewCharges;
 const getAllChargeList = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const charges = yield db_1.prisma.charges.findMany({
+            where: {
+                is_deleted: false,
+            },
             select: {
                 id: true,
                 additional_charge: true,
@@ -90,7 +93,7 @@ exports.getAllChargeList = getAllChargeList;
 const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { user_charge, company_charge, platform_charge, additional_charge, cardId, serviceId, } = req.body;
+        const { user_charge, company_charge, platform_charge, additional_charge, cardId, serviceId, bankId, update_transaction, } = req.body;
         // Ensure ID is provided
         if (!id) {
             return next((0, resMessage_1.createError)(400, "Charge ID is required"));
@@ -101,6 +104,24 @@ const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         });
         if (!existingCharge) {
             return next((0, resMessage_1.createError)(404, "Charge not found"));
+        }
+        const bank = yield db_1.prisma.bankDetails.findUnique({
+            where: {
+                id: bankId,
+            },
+        });
+        const card = yield db_1.prisma.cardsDetails.findUnique({
+            where: {
+                id: cardId,
+            },
+        });
+        const service = yield db_1.prisma.services.findUnique({
+            where: {
+                id: serviceId,
+            },
+        });
+        if (!bank || !card || !service) {
+            return next((0, resMessage_1.createError)(400, "Bank, Card or Service not found"));
         }
         // Update the charge
         const updatedCharge = yield db_1.prisma.charges.update({
@@ -114,8 +135,34 @@ const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                     : undefined,
                 cardId: cardId || existingCharge.cardId,
                 serviceId: serviceId || existingCharge.serviceId,
+                bankId: bankId || existingCharge.bankId,
             },
         });
+        if (update_transaction) {
+            const updatedTransaction = yield db_1.prisma.transaction.updateMany({
+                where: {
+                    cardId,
+                    serviceId: serviceId,
+                    bankId,
+                },
+                data: {
+                    user_charge: updatedCharge.user_charge,
+                    company_charge: updatedCharge.company_charge,
+                    platform_charge: updatedCharge.platform_charge,
+                    additional_charge: updatedCharge.additional_charge,
+                    bankId: updatedCharge.bankId,
+                    cardId: updatedCharge.cardId,
+                    serviceId: updatedCharge.serviceId,
+                    bankName: bank.name,
+                    cardName: card.name,
+                    serviceName: service.name,
+                },
+            });
+            console.log(updatedTransaction);
+            if (!updatedTransaction) {
+                return next((0, resMessage_1.createError)(500, "Error updating transactions "));
+            }
+        }
         (0, resMessage_1.createSuccess)(res, "Charge updated Successfully", { id: updatedCharge.id });
     }
     catch (error) {
@@ -139,8 +186,8 @@ const deleteCharge = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         yield db_1.prisma.charges.update({
             where: { id },
             data: {
-                is_deleted: true
-            }
+                is_deleted: true,
+            },
         });
         (0, resMessage_1.createSuccess)(res, "Charge deleted successfully");
     }

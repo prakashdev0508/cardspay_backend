@@ -87,6 +87,9 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
                         platform_charge: charges === null || charges === void 0 ? void 0 : charges.platform_charge,
                         additional_charge: charges === null || charges === void 0 ? void 0 : charges.additional_charge,
                         leadId: leadId,
+                        bankName: bank.name,
+                        cardName: card.name,
+                        serviceName: service.name,
                     },
                 });
                 (0, resMessage_1.createSuccess)(res, `${existingLead ? "Data added to existing lead" : "New lead created "}`, { leadId }, 200);

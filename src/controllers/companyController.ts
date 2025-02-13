@@ -1,6 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response, NextFunction } from "express";
 import { createError } from "../utils/resMessage";
+import { generatePassword } from "./authController";
+import bcrypt from "bcryptjs";
+import { sendEmail } from "../utils/emails";
 
 const prisma = new PrismaClient();
 
@@ -16,6 +19,7 @@ export const registerCompany = async (
       address,
       email,
       additinal_information,
+      mobile_number,
     } = req.body;
 
     const result = await prisma.$transaction(async (tx) => {
@@ -36,7 +40,26 @@ export const registerCompany = async (
         },
       });
 
-      return { company };
+      const plainPassword = generatePassword();
+      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+      const user = await tx.user.create({
+        data: {
+          email,
+          name: company.company_name,
+          company_id: company.id,
+          password: hashedPassword,
+          phone_number: String(mobile_number),
+        },
+      });
+
+      await sendEmail(
+        email,
+        "Your account credentials",
+        `Your account credentials are:\nEmail: ${email}\nPassword: ${plainPassword}`
+      );
+
+      return { company, user };
     });
 
     res.status(201).json({

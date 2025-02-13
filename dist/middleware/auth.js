@@ -33,6 +33,7 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 id: true,
                 is_active: true,
                 is_deleted: true,
+                company_id: true,
                 userRoles: {
                     include: {
                         role: {
@@ -51,6 +52,7 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         const roleSlugs = user.userRoles.map((userRole) => userRole.role.role_slug);
         res.locals.userId = user.id;
         res.locals.roles = roleSlugs;
+        res.locals.companyId = user.company_id;
         next();
     }
     catch (error) {

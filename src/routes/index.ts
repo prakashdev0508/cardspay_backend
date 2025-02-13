@@ -65,7 +65,9 @@ router
   .get(verifyToken, verifyRoles(["super_admin", "admin"]), getAllCompany);
 
 //User routes
-router.route("/user/create").post(userRegister);
+router
+  .route("/user/create")
+  .post(verifyToken, verifyRoles(["super_admin", "admin"]), userRegister);
 router.route("/user/send-password").post(sendUserDetails);
 router.route("/user/login").post(userLogin);
 router.route("/user/send-password-link").post(resendUpdatePasswordLink);
@@ -74,19 +76,19 @@ router.route("/user/manual-update-password").post(verifyToken, updatePassword);
 router.route("/user-details").get(verifyToken, userDetails);
 router
   .route("/user/all")
-  .get(verifyToken, verifyRoles(["super_admin"]), allUsers);
+  .get(verifyToken, verifyRoles(["super_admin", "admin"]), allUsers);
 router.route("/user-detail/:id").get(verifyToken, userById);
 router
   .route("/user/toggel-user/:id")
   .put(verifyToken, verifyRoles(["super_admin"]), deactivateUser);
 
 //Roles
-router.route("/role/create").post(verifyToken, createRoles);
-router.route("/role/all").get(verifyToken, allRoles);
-router.route("/role/assign").post(verifyToken, assignRolesToUser);
+router.route("/role/create").post(verifyToken,  verifyRoles(["super_admin" , "admin"]) ,createRoles);
+router.route("/role/all").get(verifyToken,  verifyRoles(["super_admin" , "admin"]) ,allRoles);
+router.route("/role/assign").post(verifyToken,  verifyRoles(["super_admin" , "admin"]) , assignRolesToUser);
 router
   .route("/role/dectivate/:id")
-  .put(verifyToken, verifyRoles(["super_admin"]), deactivateRole);
+  .put(verifyToken, verifyRoles(["super_admin" , "admin"]), deactivateRole);
 
 // Service
 router

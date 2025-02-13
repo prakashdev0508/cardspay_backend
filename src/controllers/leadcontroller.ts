@@ -34,8 +34,7 @@ export const newLead = async (
       },
     });
 
-    console.log( "existing" , existingLead)
-    
+    console.log("existing", existingLead);
 
     let leadId = existingLead?.id || null;
 
@@ -101,17 +100,21 @@ export const newLead = async (
             platform_charge: charges?.platform_charge,
             additional_charge: charges?.additional_charge,
             leadId: leadId,
+            bankName: bank.name,
+            cardName: card.name,
+            serviceName: service.name,
           },
         });
 
         createSuccess(
           res,
-          `${existingLead ? "Data added to existing lead" : "New lead created "}`,
+          `${
+            existingLead ? "Data added to existing lead" : "New lead created "
+          }`,
           { leadId },
           200
         );
       }
-
     });
   } catch (error) {
     console.log("err", error);

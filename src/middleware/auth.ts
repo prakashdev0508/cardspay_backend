@@ -29,6 +29,7 @@ export const verifyToken = async (
         id: true,
         is_active: true,
         is_deleted: true,
+        company_id: true,
         userRoles: {
           include: {
             role: {
@@ -50,6 +51,7 @@ export const verifyToken = async (
     const roleSlugs = user.userRoles.map((userRole) => userRole.role.role_slug);
     res.locals.userId = user.id;
     res.locals.roles = roleSlugs;
+    res.locals.companyId = user.company_id;
 
     next();
   } catch (error) {
