@@ -14,7 +14,7 @@ const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, mobile_number, city_name, area, expected_amount, serviceId, priority, amountDetails, bankId, } = req.body;
+        const { name, mobile_number, city_name, area, expected_amount, priority, amountDetails, } = req.body;
         const userId = res.locals.userId;
         if (!userId) {
             return next((0, resMessage_1.createError)(403, "No user found"));
@@ -22,27 +22,53 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         if (!mobile_number) {
             return next((0, resMessage_1.createError)(400, "Mobile number is required"));
         }
+        const existingLead = yield db_1.prisma.customerData.findFirst({
+            where: {
+                mobile_number,
+            },
+        });
+        console.log("existing", existingLead);
+        let leadId = (existingLead === null || existingLead === void 0 ? void 0 : existingLead.id) || null;
         yield db_1.prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             // Step 1: Create a new lead
-            const lead = yield tx.customerData.create({
-                data: {
-                    name,
-                    mobile_number,
-                    city_name,
-                    area,
-                    expected_amount: Number(expected_amount),
-                    priority,
-                    serviceId,
-                    created_by: userId,
-                },
-            });
-            // Step 2: Insert amount details transactions
+            if (!existingLead) {
+                const lead = yield tx.customerData.create({
+                    data: {
+                        name,
+                        mobile_number,
+                        city_name,
+                        area,
+                        expected_amount: Number(expected_amount) || 0,
+                        priority,
+                        created_by: userId,
+                    },
+                });
+                leadId = lead.id;
+            }
             for (const amount of amountDetails) {
+                const bank = yield tx.bankDetails.findUnique({
+                    where: {
+                        id: amount.bankId,
+                    },
+                });
+                const card = yield tx.cardsDetails.findUnique({
+                    where: {
+                        id: amount.cardId,
+                    },
+                });
+                const service = yield tx.services.findUnique({
+                    where: {
+                        id: amount.serviceId,
+                    },
+                });
+                if (!bank || !card || !service) {
+                    return next((0, resMessage_1.createError)(400, "Bank, Card or Service not found"));
+                }
                 const charges = yield tx.charges.findFirst({
                     where: {
                         cardId: amount.cardId,
-                        serviceId: serviceId,
-                        bankId,
+                        serviceId: amount.serviceId,
+                        bankId: amount.bankId,
                     },
                 });
                 yield tx.transaction.create({
@@ -52,7 +78,7 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
                         createdBy: userId,
                         cardId: amount.cardId,
                         bankId: amount.bankId,
-                        serviceId: serviceId,
+                        serviceId: amount.serviceId,
                         follow_up_date: amount.follow_up_date
                             ? new Date(amount.follow_up_date)
                             : null,
@@ -60,11 +86,11 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
                         company_charge: charges === null || charges === void 0 ? void 0 : charges.company_charge,
                         platform_charge: charges === null || charges === void 0 ? void 0 : charges.platform_charge,
                         additional_charge: charges === null || charges === void 0 ? void 0 : charges.additional_charge,
-                        leadId: lead.id,
+                        leadId: leadId,
                     },
                 });
+                (0, resMessage_1.createSuccess)(res, `${existingLead ? "Data added to existing lead" : "New lead created "}`, { leadId }, 200);
             }
-            (0, resMessage_1.createSuccess)(res, "Data added", { id: lead.id }, 200);
         }));
     }
     catch (error) {
@@ -122,10 +148,28 @@ const addNewTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         yield db_1.prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             // Step 1: Insert amount details transactions
             for (const amount of amountDetails) {
+                const bank = yield tx.bankDetails.findUnique({
+                    where: {
+                        id: amount.bankId,
+                    },
+                });
+                const card = yield tx.cardsDetails.findUnique({
+                    where: {
+                        id: amount.cardId,
+                    },
+                });
+                const service = yield tx.services.findUnique({
+                    where: {
+                        id: amount.serviceId,
+                    },
+                });
+                if (!bank || !card || !service) {
+                    return next((0, resMessage_1.createError)(400, "Bank, Card or Service not found"));
+                }
                 const charges = yield tx.charges.findFirst({
                     where: {
                         cardId: amount.cardId,
-                        serviceId: lead.serviceId,
+                        serviceId: amount.serviceId,
                         bankId: amount.bankId,
                     },
                 });

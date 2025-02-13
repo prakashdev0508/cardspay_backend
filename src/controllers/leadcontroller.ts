@@ -14,10 +14,8 @@ export const newLead = async (
       city_name,
       area,
       expected_amount,
-      serviceId,
       priority,
       amountDetails,
-      bankId,
     } = req.body;
 
     const userId = res.locals.userId;
@@ -30,28 +28,60 @@ export const newLead = async (
       return next(createError(400, "Mobile number is required"));
     }
 
+    const existingLead = await prisma.customerData.findFirst({
+      where: {
+        mobile_number,
+      },
+    });
+
+    console.log( "existing" , existingLead)
+    
+
+    let leadId = existingLead?.id || null;
+
     await prisma.$transaction(async (tx) => {
       // Step 1: Create a new lead
-      const lead = await tx.customerData.create({
-        data: {
-          name,
-          mobile_number,
-          city_name,
-          area,
-          expected_amount: Number(expected_amount),
-          priority,
-          serviceId,
-          created_by: userId,
-        },
-      });
+      if (!existingLead) {
+        const lead = await tx.customerData.create({
+          data: {
+            name,
+            mobile_number,
+            city_name,
+            area,
+            expected_amount: Number(expected_amount) || 0,
+            priority,
+            created_by: userId,
+          },
+        });
+        leadId = lead.id;
+      }
 
-      // Step 2: Insert amount details transactions
       for (const amount of amountDetails) {
+        const bank = await tx.bankDetails.findUnique({
+          where: {
+            id: amount.bankId,
+          },
+        });
+
+        const card = await tx.cardsDetails.findUnique({
+          where: {
+            id: amount.cardId,
+          },
+        });
+
+        const service = await tx.services.findUnique({
+          where: {
+            id: amount.serviceId,
+          },
+        });
+        if (!bank || !card || !service) {
+          return next(createError(400, "Bank, Card or Service not found"));
+        }
         const charges = await tx.charges.findFirst({
           where: {
             cardId: amount.cardId,
-            serviceId: serviceId,
-            bankId,
+            serviceId: amount.serviceId,
+            bankId: amount.bankId,
           },
         });
 
@@ -62,7 +92,7 @@ export const newLead = async (
             createdBy: userId,
             cardId: amount.cardId,
             bankId: amount.bankId,
-            serviceId: serviceId,
+            serviceId: amount.serviceId,
             follow_up_date: amount.follow_up_date
               ? new Date(amount.follow_up_date)
               : null,
@@ -70,12 +100,18 @@ export const newLead = async (
             company_charge: charges?.company_charge,
             platform_charge: charges?.platform_charge,
             additional_charge: charges?.additional_charge,
-            leadId: lead.id,
+            leadId: leadId,
           },
         });
+
+        createSuccess(
+          res,
+          `${existingLead ? "Data added to existing lead" : "New lead created "}`,
+          { leadId },
+          200
+        );
       }
 
-      createSuccess(res, "Data added", { id: lead.id }, 200);
     });
   } catch (error) {
     console.log("err", error);
@@ -154,10 +190,31 @@ export const addNewTransaction = async (
     await prisma.$transaction(async (tx) => {
       // Step 1: Insert amount details transactions
       for (const amount of amountDetails) {
+        const bank = await tx.bankDetails.findUnique({
+          where: {
+            id: amount.bankId,
+          },
+        });
+
+        const card = await tx.cardsDetails.findUnique({
+          where: {
+            id: amount.cardId,
+          },
+        });
+
+        const service = await tx.services.findUnique({
+          where: {
+            id: amount.serviceId,
+          },
+        });
+        if (!bank || !card || !service) {
+          return next(createError(400, "Bank, Card or Service not found"));
+        }
+
         const charges = await tx.charges.findFirst({
           where: {
             cardId: amount.cardId,
-            serviceId: lead.serviceId,
+            serviceId: amount.serviceId,
             bankId: amount.bankId,
           },
         });
