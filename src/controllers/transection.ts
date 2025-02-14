@@ -165,7 +165,7 @@ export const updateTransaction = async (
     };
 
     if (req.body.bill_amount !== undefined) {
-      updateData.bill_amount = req.body.bill_amount;
+      updateData.bill_amount = Number(req.body.bill_amount);
     }
     if (req.body.due_date) {
       updateData.due_date = new Date(req.body.due_date);
