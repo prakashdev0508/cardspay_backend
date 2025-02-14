@@ -36,7 +36,9 @@ import {
 import {
   addNewTransaction,
   getCustomerData,
+  getCustomerDataById,
   newLead,
+  updateCustomerData,
 } from "../controllers/leadcontroller";
 import {
   getAllTransaction,
@@ -83,12 +85,18 @@ router
   .put(verifyToken, verifyRoles(["super_admin"]), deactivateUser);
 
 //Roles
-router.route("/role/create").post(verifyToken,  verifyRoles(["super_admin" , "admin"]) ,createRoles);
-router.route("/role/all").get(verifyToken,  verifyRoles(["super_admin" , "admin"]) ,allRoles);
-router.route("/role/assign").post(verifyToken,  verifyRoles(["super_admin" , "admin"]) , assignRolesToUser);
+router
+  .route("/role/create")
+  .post(verifyToken, verifyRoles(["super_admin", "admin"]), createRoles);
+router
+  .route("/role/all")
+  .get(verifyToken, verifyRoles(["super_admin", "admin"]), allRoles);
+router
+  .route("/role/assign")
+  .post(verifyToken, verifyRoles(["super_admin", "admin"]), assignRolesToUser);
 router
   .route("/role/dectivate/:id")
-  .put(verifyToken, verifyRoles(["super_admin" , "admin"]), deactivateRole);
+  .put(verifyToken, verifyRoles(["super_admin", "admin"]), deactivateRole);
 
 // Service
 router
@@ -189,6 +197,14 @@ router
   );
 
 router.route("/leadData").get(verifyToken, getCustomerData);
+router.route("/leadData/:id").get(verifyToken, getCustomerDataById);
+router
+  .route("/update/leadData/:id")
+  .put(
+    verifyToken,
+    verifyRoles(["super_admin", "finance_manager", "admin", "sales"]),
+    updateCustomerData
+  );
 
 //Transaction
 router

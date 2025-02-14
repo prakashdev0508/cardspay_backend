@@ -253,3 +253,147 @@ export const addNewTransaction = async (
     next(createError(500, "Error creating new transaction", error));
   }
 };
+
+export const getCustomerDataById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return next(createError(400, "Id is required"));
+    }
+
+    const userId = res.locals.userId;
+    const roles = res.locals.roles;
+
+    const filters: any = {};
+
+    if (
+      !roles.includes("super_admin") &&
+      !roles.includes("admin") &&
+      !roles.includes("finance_manager")
+    ) {
+      filters.createdBy = userId;
+    }
+
+    filters.id = id;
+
+    const customerData = await prisma.customerData.findUnique({
+      where: filters,
+    });
+
+    createSuccess(res, "Data fetched", customerData, 200);
+  } catch (error) {
+    console.log("err", error);
+    next(createError(500, "Error fetching data", error));
+  }
+};
+
+export const updateCustomerData = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { name, mobile_number, city_name, area, expected_amount, priority } =
+      req.body;
+
+    const allowedFields = [
+      "name",
+      "mobile_number",
+      "city_name",
+      "area",
+      "expected_amount",
+      "priority",
+    ];
+    const receivedFields = Object.keys(req.body);
+
+    const invalidFields = receivedFields.filter(
+      (field) => !allowedFields.includes(field)
+    );
+
+    if (invalidFields.length > 0) {
+      return next(
+        createError(400, `Invalid fields found: ${invalidFields.join(", ")}`)
+      );
+    }
+
+    if (!id) {
+      return next(createError(400, "Id is required"));
+    }
+
+    const userId = res.locals.userId;
+    const userName = res.locals.userName;
+
+    const lead = await prisma.customerData.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    const mobile_number_exists = await prisma.customerData.findMany({
+      where: {
+        mobile_number,
+        id: {
+          not: id,
+        },
+      },
+    });
+
+    if (
+      mobile_number_exists.some(
+        (data) => data.mobile_number === mobile_number && data.id !== id
+      )
+    ) {
+      return next(createError(400, "Mobile number already exists"));
+    }
+
+    if (!lead) {
+      return next(createError(400, "Lead not found"));
+    }
+
+    const filterData: any = {
+      lastUpdatedBy: userName,
+    };
+
+    if (name) {
+      filterData.name = name;
+    }
+
+    if (mobile_number) {
+      filterData.mobile_number = mobile_number;
+    }
+
+    if (city_name) {
+      filterData.city_name = city_name;
+    }
+
+    if (area) {
+      filterData.area = area;
+    }
+
+    if (expected_amount) {
+      filterData.expected_amount = expected_amount;
+    }
+
+    if (priority) {
+      filterData.priority = priority;
+    }
+
+    await prisma.customerData.update({
+      where: {
+        id,
+      },
+      data: filterData,
+    });
+
+    createSuccess(res, "Data updated", { id }, 200);
+  } catch (error) {
+    console.log("err", error);
+    next(createError(500, "Error updating data", error));
+  }
+};
