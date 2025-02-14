@@ -192,6 +192,8 @@ model CustomerData {
   serviceId       String?
   service         Services? @relation(fields: [serviceId], references: [id])
 
+  transactionHistory Json?
+
   created_by String
   createdBy  User          @relation(fields: [created_by], references: [id])
   amount     Transaction[]
@@ -199,6 +201,7 @@ model CustomerData {
   priority Priority @default(MEDIUM)
 
   is_deleted Boolean @default(false)
+  lastUpdatedBy String?
 
 
   createdAt DateTime @default(now())

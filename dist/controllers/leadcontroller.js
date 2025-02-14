@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addNewTransaction = exports.getCustomerData = exports.newLead = void 0;
+exports.updateCustomerData = exports.getCustomerDataById = exports.addNewTransaction = exports.getCustomerData = exports.newLead = void 0;
 const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -207,3 +207,105 @@ const addNewTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.addNewTransaction = addNewTransaction;
+const getCustomerDataById = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return next((0, resMessage_1.createError)(400, "Id is required"));
+        }
+        const userId = res.locals.userId;
+        const roles = res.locals.roles;
+        const filters = {};
+        if (!roles.includes("super_admin") &&
+            !roles.includes("admin") &&
+            !roles.includes("finance_manager")) {
+            filters.createdBy = userId;
+        }
+        filters.id = id;
+        const customerData = yield db_1.prisma.customerData.findUnique({
+            where: filters,
+        });
+        (0, resMessage_1.createSuccess)(res, "Data fetched", customerData, 200);
+    }
+    catch (error) {
+        console.log("err", error);
+        next((0, resMessage_1.createError)(500, "Error fetching data", error));
+    }
+});
+exports.getCustomerDataById = getCustomerDataById;
+const updateCustomerData = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const { name, mobile_number, city_name, area, expected_amount, priority } = req.body;
+        const allowedFields = [
+            "name",
+            "mobile_number",
+            "city_name",
+            "area",
+            "expected_amount",
+            "priority",
+        ];
+        const receivedFields = Object.keys(req.body);
+        const invalidFields = receivedFields.filter((field) => !allowedFields.includes(field));
+        if (invalidFields.length > 0) {
+            return next((0, resMessage_1.createError)(400, `Invalid fields found: ${invalidFields.join(", ")}`));
+        }
+        if (!id) {
+            return next((0, resMessage_1.createError)(400, "Id is required"));
+        }
+        const userId = res.locals.userId;
+        const userName = res.locals.userName;
+        const lead = yield db_1.prisma.customerData.findUnique({
+            where: {
+                id: id,
+            },
+        });
+        const mobile_number_exists = yield db_1.prisma.customerData.findMany({
+            where: {
+                mobile_number,
+                id: {
+                    not: id,
+                },
+            },
+        });
+        if (mobile_number_exists.some((data) => data.mobile_number === mobile_number && data.id !== id)) {
+            return next((0, resMessage_1.createError)(400, "Mobile number already exists"));
+        }
+        if (!lead) {
+            return next((0, resMessage_1.createError)(400, "Lead not found"));
+        }
+        const filterData = {
+            lastUpdatedBy: userName,
+        };
+        if (name) {
+            filterData.name = name;
+        }
+        if (mobile_number) {
+            filterData.mobile_number = mobile_number;
+        }
+        if (city_name) {
+            filterData.city_name = city_name;
+        }
+        if (area) {
+            filterData.area = area;
+        }
+        if (expected_amount) {
+            filterData.expected_amount = expected_amount;
+        }
+        if (priority) {
+            filterData.priority = priority;
+        }
+        yield db_1.prisma.customerData.update({
+            where: {
+                id,
+            },
+            data: filterData,
+        });
+        (0, resMessage_1.createSuccess)(res, "Data updated", { id }, 200);
+    }
+    catch (error) {
+        console.log("err", error);
+        next((0, resMessage_1.createError)(500, "Error updating data", error));
+    }
+});
+exports.updateCustomerData = updateCustomerData;

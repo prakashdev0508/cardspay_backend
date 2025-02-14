@@ -40,9 +40,15 @@ router
     .route("/user/toggel-user/:id")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin"]), userController_1.deactivateUser);
 //Roles
-router.route("/role/create").post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.createRoles);
-router.route("/role/all").get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.allRoles);
-router.route("/role/assign").post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.assignRolesToUser);
+router
+    .route("/role/create")
+    .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.createRoles);
+router
+    .route("/role/all")
+    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.allRoles);
+router
+    .route("/role/assign")
+    .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.assignRolesToUser);
 router
     .route("/role/dectivate/:id")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.deactivateRole);
@@ -89,6 +95,10 @@ router
     .route("/lead/create")
     .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), leadcontroller_1.newLead);
 router.route("/leadData").get(auth_1.verifyToken, leadcontroller_1.getCustomerData);
+router.route("/leadData/:id").get(auth_1.verifyToken, leadcontroller_1.getCustomerDataById);
+router
+    .route("/update/leadData/:id")
+    .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin", "sales"]), leadcontroller_1.updateCustomerData);
 //Transaction
 router
     .route("/transaction/all")
