@@ -87,13 +87,13 @@ router
 //Roles
 router
   .route("/role/create")
-  .post(verifyToken, verifyRoles(["super_admin", "admin"]), createRoles);
+  .post(verifyToken, createRoles);
 router
   .route("/role/all")
-  .get(verifyToken, verifyRoles(["super_admin", "admin"]), allRoles);
+  .get(verifyToken, allRoles);
 router
   .route("/role/assign")
-  .post(verifyToken, verifyRoles(["super_admin", "admin"]), assignRolesToUser);
+  .post(verifyToken, assignRolesToUser);
 router
   .route("/role/dectivate/:id")
   .put(verifyToken, verifyRoles(["super_admin", "admin"]), deactivateRole);

@@ -27,74 +27,71 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
                 mobile_number,
             },
         });
-        console.log("existing", existingLead);
         let leadId = (existingLead === null || existingLead === void 0 ? void 0 : existingLead.id) || null;
-        yield db_1.prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-            // Step 1: Create a new lead
-            if (!existingLead) {
-                const lead = yield tx.customerData.create({
-                    data: {
-                        name,
-                        mobile_number,
-                        city_name,
-                        area,
-                        expected_amount: Number(expected_amount) || 0,
-                        priority,
-                        created_by: userId,
-                    },
-                });
-                leadId = lead.id;
+        // Step 1: Create a new lead
+        if (!existingLead) {
+            const lead = yield db_1.prisma.customerData.create({
+                data: {
+                    name,
+                    mobile_number,
+                    city_name,
+                    area,
+                    expected_amount: Number(expected_amount) || 0,
+                    priority,
+                    created_by: userId,
+                },
+            });
+            leadId = lead.id;
+        }
+        for (const amount of amountDetails) {
+            const bank = yield db_1.prisma.bankDetails.findUnique({
+                where: {
+                    id: amount.bankId,
+                },
+            });
+            const card = yield db_1.prisma.cardsDetails.findUnique({
+                where: {
+                    id: amount.cardId,
+                },
+            });
+            const service = yield db_1.prisma.services.findUnique({
+                where: {
+                    id: amount.serviceId,
+                },
+            });
+            if (!bank || !card || !service) {
+                return next((0, resMessage_1.createError)(400, "Bank, Card or Service not found"));
             }
-            for (const amount of amountDetails) {
-                const bank = yield tx.bankDetails.findUnique({
-                    where: {
-                        id: amount.bankId,
-                    },
-                });
-                const card = yield tx.cardsDetails.findUnique({
-                    where: {
-                        id: amount.cardId,
-                    },
-                });
-                const service = yield tx.services.findUnique({
-                    where: {
-                        id: amount.serviceId,
-                    },
-                });
-                if (!bank || !card || !service) {
-                    return next((0, resMessage_1.createError)(400, "Bank, Card or Service not found"));
-                }
-                const charges = yield tx.charges.findFirst({
-                    where: {
-                        cardId: amount.cardId,
-                        serviceId: amount.serviceId,
-                        bankId: amount.bankId,
-                    },
-                });
-                yield tx.transaction.create({
-                    data: {
-                        bill_amount: amount.bill_amount,
-                        due_date: new Date(amount.due_date),
-                        createdBy: userId,
-                        cardId: amount.cardId,
-                        bankId: amount.bankId,
-                        serviceId: amount.serviceId,
-                        follow_up_date: amount.follow_up_date
-                            ? new Date(amount.follow_up_date)
-                            : null,
-                        user_charge: charges === null || charges === void 0 ? void 0 : charges.user_charge,
-                        company_charge: charges === null || charges === void 0 ? void 0 : charges.company_charge,
-                        platform_charge: charges === null || charges === void 0 ? void 0 : charges.platform_charge,
-                        additional_charge: charges === null || charges === void 0 ? void 0 : charges.additional_charge,
-                        leadId: leadId,
-                        bankName: bank.name,
-                        cardName: card.name,
-                        serviceName: service.name,
-                    },
-                });
-                (0, resMessage_1.createSuccess)(res, `${existingLead ? "Data added to existing lead" : "New lead created "}`, { leadId }, 200);
-            }
-        }));
+            const charges = yield db_1.prisma.charges.findFirst({
+                where: {
+                    cardId: amount.cardId,
+                    serviceId: amount.serviceId,
+                    bankId: amount.bankId,
+                },
+            });
+            yield db_1.prisma.transaction.create({
+                data: {
+                    bill_amount: amount.bill_amount,
+                    due_date: new Date(amount.due_date),
+                    createdBy: userId,
+                    cardId: amount.cardId,
+                    bankId: amount.bankId,
+                    serviceId: amount.serviceId,
+                    follow_up_date: amount.follow_up_date
+                        ? new Date(amount.follow_up_date)
+                        : null,
+                    user_charge: charges === null || charges === void 0 ? void 0 : charges.user_charge,
+                    company_charge: charges === null || charges === void 0 ? void 0 : charges.company_charge,
+                    platform_charge: charges === null || charges === void 0 ? void 0 : charges.platform_charge,
+                    additional_charge: charges === null || charges === void 0 ? void 0 : charges.additional_charge,
+                    leadId: leadId,
+                    bankName: bank.name,
+                    cardName: card.name,
+                    serviceName: service.name,
+                },
+            });
+            (0, resMessage_1.createSuccess)(res, `${existingLead ? "Data added to existing lead" : "New lead created "}`, { leadId }, 200);
+        }
     }
     catch (error) {
         console.log("err", error);

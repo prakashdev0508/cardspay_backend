@@ -34,88 +34,82 @@ export const newLead = async (
       },
     });
 
-    console.log("existing", existingLead);
-
     let leadId = existingLead?.id || null;
 
-    await prisma.$transaction(async (tx) => {
-      // Step 1: Create a new lead
-      if (!existingLead) {
-        const lead = await tx.customerData.create({
-          data: {
-            name,
-            mobile_number,
-            city_name,
-            area,
-            expected_amount: Number(expected_amount) || 0,
-            priority,
-            created_by: userId,
-          },
-        });
-        leadId = lead.id;
+    // Step 1: Create a new lead
+    if (!existingLead) {
+      const lead = await prisma.customerData.create({
+        data: {
+          name,
+          mobile_number,
+          city_name,
+          area,
+          expected_amount: Number(expected_amount) || 0,
+          priority,
+          created_by: userId,
+        },
+      });
+      leadId = lead.id;
+    }
+
+    for (const amount of amountDetails) {
+      const bank = await prisma.bankDetails.findUnique({
+        where: {
+          id: amount.bankId,
+        },
+      });
+
+      const card = await prisma.cardsDetails.findUnique({
+        where: {
+          id: amount.cardId,
+        },
+      });
+
+      const service = await prisma.services.findUnique({
+        where: {
+          id: amount.serviceId,
+        },
+      });
+      if (!bank || !card || !service) {
+        return next(createError(400, "Bank, Card or Service not found"));
       }
+      const charges = await prisma.charges.findFirst({
+        where: {
+          cardId: amount.cardId,
+          serviceId: amount.serviceId,
+          bankId: amount.bankId,
+        },
+      });
 
-      for (const amount of amountDetails) {
-        const bank = await tx.bankDetails.findUnique({
-          where: {
-            id: amount.bankId,
-          },
-        });
+      await prisma.transaction.create({
+        data: {
+          bill_amount: amount.bill_amount,
+          due_date: new Date(amount.due_date),
+          createdBy: userId,
+          cardId: amount.cardId,
+          bankId: amount.bankId,
+          serviceId: amount.serviceId,
+          follow_up_date: amount.follow_up_date
+            ? new Date(amount.follow_up_date)
+            : null,
+          user_charge: charges?.user_charge,
+          company_charge: charges?.company_charge,
+          platform_charge: charges?.platform_charge,
+          additional_charge: charges?.additional_charge,
+          leadId: leadId,
+          bankName: bank.name,
+          cardName: card.name,
+          serviceName: service.name,
+        },
+      });
 
-        const card = await tx.cardsDetails.findUnique({
-          where: {
-            id: amount.cardId,
-          },
-        });
-
-        const service = await tx.services.findUnique({
-          where: {
-            id: amount.serviceId,
-          },
-        });
-        if (!bank || !card || !service) {
-          return next(createError(400, "Bank, Card or Service not found"));
-        }
-        const charges = await tx.charges.findFirst({
-          where: {
-            cardId: amount.cardId,
-            serviceId: amount.serviceId,
-            bankId: amount.bankId,
-          },
-        });
-
-        await tx.transaction.create({
-          data: {
-            bill_amount: amount.bill_amount,
-            due_date: new Date(amount.due_date),
-            createdBy: userId,
-            cardId: amount.cardId,
-            bankId: amount.bankId,
-            serviceId: amount.serviceId,
-            follow_up_date: amount.follow_up_date
-              ? new Date(amount.follow_up_date)
-              : null,
-            user_charge: charges?.user_charge,
-            company_charge: charges?.company_charge,
-            platform_charge: charges?.platform_charge,
-            additional_charge: charges?.additional_charge,
-            leadId: leadId,
-            bankName: bank.name,
-            cardName: card.name,
-            serviceName: service.name,
-          },
-        });
-
-        createSuccess(
-          res,
-          `${
-            existingLead ? "Data added to existing lead" : "New lead created "
-          }`,
-          { leadId },
-          200
-        );
-      }
-    });
+      createSuccess(
+        res,
+        `${existingLead ? "Data added to existing lead" : "New lead created "}`,
+        { leadId },
+        200
+      );
+    }
   } catch (error) {
     console.log("err", error);
     next(createError(500, "Error creating new lead", error));
