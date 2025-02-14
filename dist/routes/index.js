@@ -42,13 +42,13 @@ router
 //Roles
 router
     .route("/role/create")
-    .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.createRoles);
+    .post(auth_1.verifyToken, roles_2.createRoles);
 router
     .route("/role/all")
-    .get(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.allRoles);
+    .get(auth_1.verifyToken, roles_2.allRoles);
 router
     .route("/role/assign")
-    .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.assignRolesToUser);
+    .post(auth_1.verifyToken, roles_2.assignRolesToUser);
 router
     .route("/role/dectivate/:id")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.deactivateRole);
