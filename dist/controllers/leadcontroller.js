@@ -69,27 +69,29 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
                     bankId: amount.bankId,
                 },
             });
-            yield db_1.prisma.transaction.create({
-                data: {
-                    bill_amount: amount.bill_amount,
-                    due_date: new Date(amount.due_date),
-                    createdBy: userId,
-                    cardId: amount.cardId,
-                    bankId: amount.bankId,
-                    serviceId: amount.serviceId,
-                    follow_up_date: amount.follow_up_date
-                        ? new Date(amount.follow_up_date)
-                        : null,
-                    user_charge: charges === null || charges === void 0 ? void 0 : charges.user_charge,
-                    company_charge: charges === null || charges === void 0 ? void 0 : charges.company_charge,
-                    platform_charge: charges === null || charges === void 0 ? void 0 : charges.platform_charge,
-                    additional_charge: charges === null || charges === void 0 ? void 0 : charges.additional_charge,
-                    leadId: leadId,
-                    bankName: bank.name,
-                    cardName: card.name,
-                    serviceName: service.name,
-                },
-            });
+            if (leadId) {
+                yield db_1.prisma.transaction.create({
+                    data: {
+                        bill_amount: amount.bill_amount,
+                        due_date: new Date(amount.due_date),
+                        createdBy: userId,
+                        cardId: amount.cardId,
+                        bankId: amount.bankId,
+                        serviceId: amount.serviceId,
+                        follow_up_date: amount.follow_up_date
+                            ? new Date(amount.follow_up_date)
+                            : null,
+                        user_charge: charges === null || charges === void 0 ? void 0 : charges.user_charge,
+                        company_charge: charges === null || charges === void 0 ? void 0 : charges.company_charge,
+                        platform_charge: charges === null || charges === void 0 ? void 0 : charges.platform_charge,
+                        additional_charge: charges === null || charges === void 0 ? void 0 : charges.additional_charge,
+                        leadId: leadId,
+                        bankName: bank.name,
+                        cardName: card.name,
+                        serviceName: service.name,
+                    },
+                });
+            }
             (0, resMessage_1.createSuccess)(res, `${existingLead ? "Data added to existing lead" : "New lead created "}`, { leadId }, 200);
         }
     }
@@ -108,7 +110,7 @@ const getCustomerData = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         if (!roles.includes("super_admin") &&
             !roles.includes("admin") &&
             !roles.includes("finance_manager")) {
-            filters.createdBy = userId;
+            filters.created_by = userId;
         }
         if (mobilenumber) {
             filters.mobile_number = mobilenumber;
