@@ -19,7 +19,12 @@ import {
   assignRolesToUser,
   deactivateRole,
 } from "../controllers/roles";
-import { createNewService, getServices } from "../controllers/service";
+import {
+  createNewService,
+  deleteService,
+  getServices,
+  updateService,
+} from "../controllers/service";
 import {
   createNewCard,
   getCardDetails,
@@ -85,15 +90,9 @@ router
   .put(verifyToken, verifyRoles(["super_admin"]), deactivateUser);
 
 //Roles
-router
-  .route("/role/create")
-  .post(verifyToken, createRoles);
-router
-  .route("/role/all")
-  .get(verifyToken, allRoles);
-router
-  .route("/role/assign")
-  .post(verifyToken, assignRolesToUser);
+router.route("/role/create").post(verifyToken, createRoles);
+router.route("/role/all").get(verifyToken, allRoles);
+router.route("/role/assign").post(verifyToken, assignRolesToUser);
 router
   .route("/role/dectivate/:id")
   .put(verifyToken, verifyRoles(["super_admin", "admin"]), deactivateRole);
@@ -107,6 +106,13 @@ router
     createNewService
   );
 
+router
+  .route("/services/update/:id")
+  .put(verifyToken, verifyRoles(["super_admin", "admin"]), updateService);
+
+router
+  .route("/services/delete/:id")
+  .delete(verifyToken, verifyRoles(["super_admin", "admin"]), deleteService);
 router.route("/services/all").get(verifyToken, getServices);
 
 //cards

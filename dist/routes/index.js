@@ -40,15 +40,9 @@ router
     .route("/user/toggel-user/:id")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin"]), userController_1.deactivateUser);
 //Roles
-router
-    .route("/role/create")
-    .post(auth_1.verifyToken, roles_2.createRoles);
-router
-    .route("/role/all")
-    .get(auth_1.verifyToken, roles_2.allRoles);
-router
-    .route("/role/assign")
-    .post(auth_1.verifyToken, roles_2.assignRolesToUser);
+router.route("/role/create").post(auth_1.verifyToken, roles_2.createRoles);
+router.route("/role/all").get(auth_1.verifyToken, roles_2.allRoles);
+router.route("/role/assign").post(auth_1.verifyToken, roles_2.assignRolesToUser);
 router
     .route("/role/dectivate/:id")
     .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), roles_2.deactivateRole);
@@ -56,6 +50,12 @@ router
 router
     .route("/services/create")
     .post(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "finance_manager", "admin"]), service_1.createNewService);
+router
+    .route("/services/update/:id")
+    .put(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), service_1.updateService);
+router
+    .route("/services/delete/:id")
+    .delete(auth_1.verifyToken, (0, roles_1.verifyRoles)(["super_admin", "admin"]), service_1.deleteService);
 router.route("/services/all").get(auth_1.verifyToken, service_1.getServices);
 //cards
 router
