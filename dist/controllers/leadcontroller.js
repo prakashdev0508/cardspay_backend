@@ -111,7 +111,10 @@ const getCustomerData = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             filters.mobile_number = mobile_number;
         }
         if (name) {
-            filters.name = name;
+            filters.name = {
+                contains: name,
+                mode: "insensitive",
+            };
         }
         const customerData = yield db_1.prisma.customerData.findMany({
             where: filters,

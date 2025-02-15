@@ -136,7 +136,10 @@ export const getCustomerData = async (
     }
 
     if (name) {
-      filters.name = name;
+      filters.name = {
+        contains: name,
+        mode: "insensitive",
+      };
     }
 
     const customerData = await prisma.customerData.findMany({
