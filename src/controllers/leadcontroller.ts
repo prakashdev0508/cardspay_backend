@@ -124,23 +124,15 @@ export const getCustomerData = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { mobilenumber, name } = req.query;
+    const { mobile_number, name } = req.query;
 
     const userId = res.locals.userId;
     const roles = res.locals.roles;
 
     const filters: any = {};
 
-    if (
-      !roles.includes("super_admin") &&
-      !roles.includes("admin") &&
-      !roles.includes("finance_manager")
-    ) {
-      filters.created_by = userId;
-    }
-
-    if (mobilenumber) {
-      filters.mobile_number = mobilenumber;
+    if (mobile_number) {
+      filters.mobile_number = mobile_number;
     }
 
     if (name) {
@@ -149,6 +141,23 @@ export const getCustomerData = async (
 
     const customerData = await prisma.customerData.findMany({
       where: filters,
+      select : {
+        id: true,
+        name: true,
+        mobile_number: true,
+        city_name: true,
+        area: true,
+        expected_amount: true,
+        priority: true,
+        lastUpdatedBy: true,
+        createdAt: true,
+        updatedAt: true,
+        createdBy: {
+          select: {
+            name: true,
+          },
+        },
+      }
     });
 
     createSuccess(res, "Data fetched", customerData, 200);
@@ -229,7 +238,7 @@ export const addNewTransaction = async (
             createdBy: userId,
             cardId: amount.cardId,
             bankId: amount.bankId,
-            serviceId: lead.serviceId,
+            serviceId: amount.serviceId,
             follow_up_date: amount.follow_up_date
               ? new Date(amount.follow_up_date)
               : null,
@@ -237,7 +246,7 @@ export const addNewTransaction = async (
             company_charge: charges?.company_charge,
             platform_charge: charges?.platform_charge,
             additional_charge: charges?.additional_charge,
-            leadId: lead.id,
+            leadId: leadId,
           },
         });
       }

@@ -103,23 +103,35 @@ const newLead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
 exports.newLead = newLead;
 const getCustomerData = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { mobilenumber, name } = req.query;
+        const { mobile_number, name } = req.query;
         const userId = res.locals.userId;
         const roles = res.locals.roles;
         const filters = {};
-        if (!roles.includes("super_admin") &&
-            !roles.includes("admin") &&
-            !roles.includes("finance_manager")) {
-            filters.created_by = userId;
-        }
-        if (mobilenumber) {
-            filters.mobile_number = mobilenumber;
+        if (mobile_number) {
+            filters.mobile_number = mobile_number;
         }
         if (name) {
             filters.name = name;
         }
         const customerData = yield db_1.prisma.customerData.findMany({
             where: filters,
+            select: {
+                id: true,
+                name: true,
+                mobile_number: true,
+                city_name: true,
+                area: true,
+                expected_amount: true,
+                priority: true,
+                lastUpdatedBy: true,
+                createdAt: true,
+                updatedAt: true,
+                createdBy: {
+                    select: {
+                        name: true,
+                    },
+                },
+            }
         });
         (0, resMessage_1.createSuccess)(res, "Data fetched", customerData, 200);
     }
@@ -185,7 +197,7 @@ const addNewTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
                         createdBy: userId,
                         cardId: amount.cardId,
                         bankId: amount.bankId,
-                        serviceId: lead.serviceId,
+                        serviceId: amount.serviceId,
                         follow_up_date: amount.follow_up_date
                             ? new Date(amount.follow_up_date)
                             : null,
@@ -193,7 +205,7 @@ const addNewTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
                         company_charge: charges === null || charges === void 0 ? void 0 : charges.company_charge,
                         platform_charge: charges === null || charges === void 0 ? void 0 : charges.platform_charge,
                         additional_charge: charges === null || charges === void 0 ? void 0 : charges.additional_charge,
-                        leadId: lead.id,
+                        leadId: leadId,
                     },
                 });
             }
