@@ -272,7 +272,7 @@ export const getCustomerDataById = async (
       !roles.includes("admin") &&
       !roles.includes("finance_manager")
     ) {
-      filters.createdBy = userId;
+      filters.created_by = userId;
     }
 
     filters.id = id;

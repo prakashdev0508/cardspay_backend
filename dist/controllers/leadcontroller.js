@@ -218,7 +218,7 @@ const getCustomerDataById = (req, res, next) => __awaiter(void 0, void 0, void 0
         if (!roles.includes("super_admin") &&
             !roles.includes("admin") &&
             !roles.includes("finance_manager")) {
-            filters.createdBy = userId;
+            filters.created_by = userId;
         }
         filters.id = id;
         const customerData = yield db_1.prisma.customerData.findUnique({
