@@ -274,25 +274,25 @@ const updateCustomerData = (req, res, next) => __awaiter(void 0, void 0, void 0,
             return next((0, resMessage_1.createError)(400, "Lead not found"));
         }
         const filterData = {
-            lastUpdatedBy: userName,
+            lastUpdatedBy: String(userName),
         };
         if (name) {
-            filterData.name = name;
+            filterData.name = String(name);
         }
         if (mobile_number) {
-            filterData.mobile_number = mobile_number;
+            filterData.mobile_number = String(mobile_number);
         }
         if (city_name) {
-            filterData.city_name = city_name;
+            filterData.city_name = String(city_name);
         }
         if (area) {
-            filterData.area = area;
+            filterData.area = String(area);
         }
         if (expected_amount) {
-            filterData.expected_amount = expected_amount;
+            filterData.expected_amount = Number(expected_amount);
         }
         if (priority) {
-            filterData.priority = priority;
+            filterData.priority = String(priority);
         }
         yield db_1.prisma.customerData.update({
             where: {
