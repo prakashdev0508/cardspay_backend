@@ -232,7 +232,9 @@ export const addNewTransaction = async (
           return next(createError(400, "Bank, Card or Service not found"));
         }
 
-        const charges = await tx.charges.findFirst({
+        let charges;
+
+        charges = await tx.charges.findFirst({
           where: {
             cardId: amount.cardId,
             serviceId: amount.serviceId,
@@ -240,7 +242,11 @@ export const addNewTransaction = async (
         });
 
         if (!charges) {
-          return next(createError(400, "Charges not found for card and bank"));
+          charges = await tx.charges.findFirst({
+            where: {
+              type: "default",
+            },
+          });
         }
 
         await tx.transaction.create({

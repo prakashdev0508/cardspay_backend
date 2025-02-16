@@ -191,14 +191,19 @@ const addNewTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
                 if (!bank || !card || !service) {
                     return next((0, resMessage_1.createError)(400, "Bank, Card or Service not found"));
                 }
-                const charges = yield tx.charges.findFirst({
+                let charges;
+                charges = yield tx.charges.findFirst({
                     where: {
                         cardId: amount.cardId,
                         serviceId: amount.serviceId,
                     },
                 });
                 if (!charges) {
-                    return next((0, resMessage_1.createError)(400, "Charges not found for card and bank"));
+                    charges = yield tx.charges.findFirst({
+                        where: {
+                            type: "default",
+                        },
+                    });
                 }
                 yield tx.transaction.create({
                     data: {
