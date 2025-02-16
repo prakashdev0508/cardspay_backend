@@ -14,19 +14,28 @@ const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const createNewCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { user_charge, company_charge, platform_charge, additional_charge, cardId, serviceId, bankId, } = req.body;
-        if (!bankId || !serviceId || !cardId) {
-            return next((0, resMessage_1.createError)(400, "Bank, Service and Card ID is required"));
+        const { user_charge, company_charge, platform_charge, additional_charge, cardId, serviceId, type, } = req.body;
+        if ((!serviceId || !cardId) && type === "service") {
+            return next((0, resMessage_1.createError)(400, "Service and Card ID is required"));
         }
         const alreadtExist = yield db_1.prisma.charges.findFirst({
             where: {
                 cardId,
                 serviceId,
-                bankId,
             },
         });
         if (alreadtExist) {
-            return next((0, resMessage_1.createError)(400, "Charges already exist for this card, service and bank"));
+            return next((0, resMessage_1.createError)(400, "Charges already exist for this card and service"));
+        }
+        if (type === "default") {
+            const defaultCharge = yield db_1.prisma.charges.findFirst({
+                where: {
+                    type: "default",
+                },
+            });
+            if (defaultCharge) {
+                return next((0, resMessage_1.createError)(400, "Default Charges already exist"));
+            }
         }
         const userId = res.locals.userId;
         if (!userId) {
@@ -40,8 +49,8 @@ const createNewCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, f
                 additional_charge: Number(additional_charge),
                 cardId,
                 serviceId,
-                bankId,
                 created_by: userId,
+                type,
             },
         });
         (0, resMessage_1.createSuccess)(res, "Charges created successfully ", { id: charges.id });
@@ -63,13 +72,8 @@ const getAllChargeList = (req, res, next) => __awaiter(void 0, void 0, void 0, f
                 user_charge: true,
                 platform_charge: true,
                 company_charge: true,
+                type: true,
                 card: {
-                    select: {
-                        id: true,
-                        name: true,
-                    },
-                },
-                bank: {
                     select: {
                         id: true,
                         name: true,
@@ -93,7 +97,7 @@ exports.getAllChargeList = getAllChargeList;
 const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { user_charge, company_charge, platform_charge, additional_charge, cardId, serviceId, bankId, update_transaction, } = req.body;
+        const { user_charge, company_charge, platform_charge, additional_charge, cardId, serviceId, update_transaction, } = req.body;
         // Ensure ID is provided
         if (!id) {
             return next((0, resMessage_1.createError)(400, "Charge ID is required"));
@@ -106,11 +110,6 @@ const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         if (!existingCharge) {
             return next((0, resMessage_1.createError)(404, "Charge not found"));
         }
-        const bank = yield db_1.prisma.bankDetails.findUnique({
-            where: {
-                id: bankId,
-            },
-        });
         const card = yield db_1.prisma.cardsDetails.findUnique({
             where: {
                 id: cardId,
@@ -121,8 +120,8 @@ const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                 id: serviceId,
             },
         });
-        if (!bank || !card || !service) {
-            return next((0, resMessage_1.createError)(400, "Bank, Card or Service not found"));
+        if (!card || !service) {
+            return next((0, resMessage_1.createError)(400, "Card or Service not found"));
         }
         // Update the charge
         const updatedCharge = yield db_1.prisma.charges.update({
@@ -136,7 +135,6 @@ const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                     : undefined,
                 cardId: cardId || existingCharge.cardId,
                 serviceId: serviceId || existingCharge.serviceId,
-                bankId: bankId || existingCharge.bankId,
             },
         });
         if (update_transaction) {
@@ -144,7 +142,6 @@ const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                 where: {
                     cardId,
                     serviceId: serviceId,
-                    bankId,
                 },
             });
             updatedTransaction.forEach((transaction) => __awaiter(void 0, void 0, void 0, function* () {
@@ -155,10 +152,8 @@ const updateCharges = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                         company_charge: updatedCharge.company_charge,
                         platform_charge: updatedCharge.platform_charge,
                         additional_charge: updatedCharge.additional_charge,
-                        bankId: updatedCharge.bankId,
                         cardId: updatedCharge.cardId,
                         serviceId: updatedCharge.serviceId,
-                        bankName: bank.name,
                         cardName: card.name,
                         serviceName: service.name,
                         lastUpdatedBy: userName,

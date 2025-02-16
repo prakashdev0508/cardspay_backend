@@ -198,12 +198,11 @@ export const updateTransaction = async (
       }
       updateData.status = req.body.status;
     }
-    if (req.body.cardId && req.body.serviceID && req.body.bankId) {
+    if (req.body.cardId && req.body.serviceID) {
       const charges = await prisma.charges.findFirst({
         where: {
           cardId: req.body.cardId,
           serviceId: req.body.serviceID,
-          bankId: req.body.bankId,
         },
       });
 

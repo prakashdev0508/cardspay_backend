@@ -15,28 +15,36 @@ export const createNewCharges = async (
       additional_charge,
       cardId,
       serviceId,
-      bankId,
+      type,
     } = req.body;
 
-    if (!bankId || !serviceId || !cardId) {
-      return next(createError(400, "Bank, Service and Card ID is required"));
+    if ((!serviceId || !cardId) && type === "service") {
+      return next(createError(400, "Service and Card ID is required"));
     }
 
     const alreadtExist = await prisma.charges.findFirst({
       where: {
         cardId,
         serviceId,
-        bankId,
       },
     });
 
     if (alreadtExist) {
       return next(
-        createError(
-          400,
-          "Charges already exist for this card, service and bank"
-        )
+        createError(400, "Charges already exist for this card and service")
       );
+    }
+
+    if (type === "default") {
+      const defaultCharge = await prisma.charges.findFirst({
+        where: {
+          type: "default",
+        },
+      });
+
+      if (defaultCharge) {
+        return next(createError(400, "Default Charges already exist"));
+      }
     }
 
     const userId = res.locals.userId;
@@ -53,8 +61,8 @@ export const createNewCharges = async (
         additional_charge: Number(additional_charge),
         cardId,
         serviceId,
-        bankId,
         created_by: userId,
+        type,
       },
     });
 
@@ -80,13 +88,8 @@ export const getAllChargeList = async (
         user_charge: true,
         platform_charge: true,
         company_charge: true,
+        type: true,
         card: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        bank: {
           select: {
             id: true,
             name: true,
@@ -121,7 +124,6 @@ export const updateCharges = async (
       additional_charge,
       cardId,
       serviceId,
-      bankId,
       update_transaction,
     } = req.body;
 
@@ -140,11 +142,6 @@ export const updateCharges = async (
     if (!existingCharge) {
       return next(createError(404, "Charge not found"));
     }
-    const bank = await prisma.bankDetails.findUnique({
-      where: {
-        id: bankId,
-      },
-    });
 
     const card = await prisma.cardsDetails.findUnique({
       where: {
@@ -157,8 +154,8 @@ export const updateCharges = async (
         id: serviceId,
       },
     });
-    if (!bank || !card || !service) {
-      return next(createError(400, "Bank, Card or Service not found"));
+    if (!card || !service) {
+      return next(createError(400, "Card or Service not found"));
     }
 
     // Update the charge
@@ -177,7 +174,6 @@ export const updateCharges = async (
             : undefined,
         cardId: cardId || existingCharge.cardId,
         serviceId: serviceId || existingCharge.serviceId,
-        bankId: bankId || existingCharge.bankId,
       },
     });
 
@@ -186,7 +182,6 @@ export const updateCharges = async (
         where: {
           cardId,
           serviceId: serviceId,
-          bankId,
         },
       });
 
@@ -198,10 +193,8 @@ export const updateCharges = async (
             company_charge: updatedCharge.company_charge,
             platform_charge: updatedCharge.platform_charge,
             additional_charge: updatedCharge.additional_charge,
-            bankId: updatedCharge.bankId,
             cardId: updatedCharge.cardId,
             serviceId: updatedCharge.serviceId,
-            bankName: bank.name,
             cardName: card.name,
             serviceName: service.name,
             lastUpdatedBy: userName,
