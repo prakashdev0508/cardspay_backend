@@ -14,10 +14,7 @@ const db_1 = require("../utils/db");
 const resMessage_1 = require("../utils/resMessage");
 const createNewCard = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, bankId } = req.body;
-        if (!bankId) {
-            return next((0, resMessage_1.createError)(400, "Bank ID is required"));
-        }
+        const { name } = req.body;
         if (!name) {
             return next((0, resMessage_1.createError)(400, "Name is required"));
         }
@@ -25,19 +22,10 @@ const createNewCard = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         if (!userId) {
             return next((0, resMessage_1.createError)(403, "No user found "));
         }
-        const bank = yield db_1.prisma.bankDetails.findFirst({
-            where: {
-                id: bankId,
-            },
-        });
-        if (!bank) {
-            return next((0, resMessage_1.createError)(400, "Bank not found"));
-        }
         const service = yield db_1.prisma.cardsDetails.create({
             data: {
                 name: String(name).trim(),
                 created_by: userId,
-                bankId: bankId,
             },
         });
         (0, resMessage_1.createSuccess)(res, "card created successfully ", { id: service.id });
@@ -80,12 +68,6 @@ const getCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 id: true,
                 name: true,
                 createdAt: true,
-                bank: {
-                    select: {
-                        name: true,
-                        id: true,
-                    },
-                },
                 createdBy: {
                     select: {
                         name: true,
@@ -102,7 +84,7 @@ const getCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
 exports.getCardDetails = getCardDetails;
 const updateCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id, name, bankId } = req.body;
+        const { id, name } = req.body;
         const userId = res.locals.userId;
         if (!userId) {
             return next((0, resMessage_1.createError)(403, "No user found "));
@@ -118,20 +100,6 @@ const updateCardDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         const updateData = {};
         if (name) {
             updateData.name = name;
-        }
-        if (bankId) {
-            if (bankId === existCard.bankId) {
-                return next((0, resMessage_1.createError)(400, "Bank already assigned to this card"));
-            }
-            const bank = yield db_1.prisma.bankDetails.findFirst({
-                where: {
-                    id: bankId,
-                },
-            });
-            if (!bank) {
-                return next((0, resMessage_1.createError)(400, "Bank not found"));
-            }
-            updateData.bankId = bankId;
         }
         const cardDetails = yield db_1.prisma.cardsDetails.update({
             where: {
