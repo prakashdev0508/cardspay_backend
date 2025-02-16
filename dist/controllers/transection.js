@@ -19,7 +19,7 @@ const getAllTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         if (!userId) {
             return next((0, resMessage_1.createError)(403, "No user found"));
         }
-        const { page = 1, perPage = 10, mobile_number, name, follow_up_date, status, } = req.query;
+        const { page = 1, perPage = 10, mobile_number, name, follow_up_date, status, due_date, } = req.query;
         const skip = (Number(page) - 1) * Number(perPage);
         const take = Number(perPage);
         const filters = {};
@@ -32,7 +32,22 @@ const getAllTransaction = (req, res, next) => __awaiter(void 0, void 0, void 0, 
             filters.status = status;
         }
         if (follow_up_date) {
-            filters.follow_up_date = new Date(follow_up_date);
+            const date = new Date(follow_up_date);
+            const startOfDay = new Date(date.setUTCHours(0, 0, 0, 0));
+            const endOfDay = new Date(date.setUTCHours(23, 59, 59, 999));
+            filters.follow_up_date = {
+                gte: startOfDay,
+                lte: endOfDay,
+            };
+        }
+        if (due_date) {
+            const date = new Date(due_date);
+            const startOfDay = new Date(date.setUTCHours(0, 0, 0, 0));
+            const endOfDay = new Date(date.setUTCHours(23, 59, 59, 999));
+            filters.due_date = {
+                gte: startOfDay,
+                lte: endOfDay,
+            };
         }
         if (mobile_number || name) {
             filters.lead = {

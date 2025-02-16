@@ -22,6 +22,7 @@ export const getAllTransaction = async (
       name,
       follow_up_date,
       status,
+      due_date,
     } = req.query;
 
     const skip = (Number(page) - 1) * Number(perPage);
@@ -42,7 +43,25 @@ export const getAllTransaction = async (
     }
 
     if (follow_up_date) {
-      filters.follow_up_date = new Date(follow_up_date as string);
+      const date = new Date(follow_up_date as string);
+      const startOfDay = new Date(date.setUTCHours(0, 0, 0, 0));
+      const endOfDay = new Date(date.setUTCHours(23, 59, 59, 999));
+    
+      filters.follow_up_date = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
+    }
+
+    if (due_date) {
+      const date = new Date(due_date as string);
+      const startOfDay = new Date(date.setUTCHours(0, 0, 0, 0));
+      const endOfDay = new Date(date.setUTCHours(23, 59, 59, 999));
+    
+      filters.due_date = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
     }
 
     if (mobile_number || name) {
@@ -161,7 +180,7 @@ export const updateTransaction = async (
     }
 
     const updateData: any = {
-      lastUpdatedBy : userName,
+      lastUpdatedBy: userName,
     };
 
     if (req.body.bill_amount !== undefined) {
