@@ -8,11 +8,7 @@ export const createNewCard = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { name, bankId } = req.body;
-
-    if (!bankId) {
-      return next(createError(400, "Bank ID is required"));
-    }
+    const { name } = req.body;
 
     if (!name) {
       return next(createError(400, "Name is required"));
@@ -24,21 +20,10 @@ export const createNewCard = async (
       return next(createError(403, "No user found "));
     }
 
-    const bank = await prisma.bankDetails.findFirst({
-      where: {
-        id: bankId,
-      },
-    });
-
-    if (!bank) {
-      return next(createError(400, "Bank not found"));
-    }
-
     const service = await prisma.cardsDetails.create({
       data: {
         name: String(name).trim(),
         created_by: userId,
-        bankId: bankId,
       },
     });
 
@@ -91,12 +76,6 @@ export const getCardDetails = async (
         id: true,
         name: true,
         createdAt: true,
-        bank: {
-          select: {
-            name: true,
-            id: true,
-          },
-        },
         createdBy: {
           select: {
             name: true,
@@ -116,7 +95,7 @@ export const updateCardDetails = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { id, name, bankId } = req.body;
+    const { id, name } = req.body;
 
     const userId = res.locals.userId;
 
@@ -139,25 +118,7 @@ export const updateCardDetails = async (
     if (name) {
       updateData.name = name;
     }
-
-    if (bankId) {
-      if (bankId === existCard.bankId) {
-        return next(createError(400, "Bank already assigned to this card"));
-      }
-
-      const bank = await prisma.bankDetails.findFirst({
-        where: {
-          id: bankId,
-        },
-      });
-
-      if (!bank) {
-        return next(createError(400, "Bank not found"));
-      }
-
-      updateData.bankId = bankId;
-    }
-
+    
     const cardDetails = await prisma.cardsDetails.update({
       where: {
         id: id,

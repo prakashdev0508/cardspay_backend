@@ -73,13 +73,24 @@ export const newLead = async (
       if (!bank || !card || !service) {
         return next(createError(400, "Bank, Card or Service not found"));
       }
-      const charges = await prisma.charges.findFirst({
+
+      let charges;
+
+      charges = await prisma.charges.findFirst({
         where: {
           cardId: amount.cardId,
           serviceId: amount.serviceId,
-          bankId: amount.bankId,
+          type: "service",
         },
       });
+
+      if (!charges) {
+        charges = await prisma.charges.findFirst({
+          where: {
+            type: "default",
+          },
+        });
+      }
 
       if (leadId) {
         await prisma.transaction.create({
@@ -126,8 +137,6 @@ export const getCustomerData = async (
   try {
     const { mobile_number, name } = req.query;
 
-    const userId = res.locals.userId;
-    const roles = res.locals.roles;
 
     const filters: any = {};
 
@@ -144,7 +153,7 @@ export const getCustomerData = async (
 
     const customerData = await prisma.customerData.findMany({
       where: filters,
-      select : {
+      select: {
         id: true,
         name: true,
         mobile_number: true,
@@ -160,7 +169,7 @@ export const getCustomerData = async (
             name: true,
           },
         },
-      }
+      },
     });
 
     createSuccess(res, "Data fetched", customerData, 200);
@@ -226,7 +235,6 @@ export const addNewTransaction = async (
           where: {
             cardId: amount.cardId,
             serviceId: amount.serviceId,
-            bankId: amount.bankId,
           },
         });
 

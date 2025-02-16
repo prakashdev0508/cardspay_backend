@@ -118,8 +118,6 @@ model BankDetails {
   createdBy  User   @relation(fields: [created_by], references: [id])
 
   cardDetails CardsDetails[]
-  charges     Charges[]
-
   transaction Transaction[]
 
     is_deleted Boolean @default(false)
@@ -149,6 +147,11 @@ model CardsDetails {
   updatedAt DateTime @updatedAt
 }
 
+enum ChargeType {
+  service
+  default
+}
+
 model Charges {
   id                String @id @default(cuid())
   user_charge       Int?
@@ -159,16 +162,15 @@ model Charges {
   cardId String?
   card   CardsDetails? @relation(fields: [cardId], references: [id])
 
+  type ChargeType @default(default)
+
   serviceId String?
   service   Services? @relation(fields: [serviceId], references: [id])
 
   created_by String
   createdBy  User   @relation(fields: [created_by], references: [id])
 
-  bankId String?
-  bank   BankDetails? @relation(fields: [bankId], references: [id])
-
-    is_deleted Boolean @default(false)
+  is_deleted Boolean @default(false)
 
 
   createdAt DateTime @default(now())
